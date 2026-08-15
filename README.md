@@ -2,7 +2,8 @@
 
 macOS 버전 구현을 이어받을 때는 먼저 [MACOS_HANDOFF.md](MACOS_HANDOFF.md)를 읽으세요.
 
-Windows + Wacom Cintiq Pro + Chrome 전용 로컬 입력 테스트 앱입니다.
+Windows와 macOS의 Wacom Cintiq Pro 네이티브 입력을 기본 브라우저에서 시각화하는
+로컬 테스트 앱입니다.
 
 브라우저 Pointer Events가 아니라 다음 네이티브 입력을 localhost WebSocket으로 받아 표시합니다.
 
@@ -12,7 +13,8 @@ Windows + Wacom Cintiq Pro + Chrome 전용 로컬 입력 테스트 앱입니다.
 
 ## 실행
 
-`WacomInputTest.exe`를 더블클릭하면 브리지가 시작되고 Chrome에서
+Windows의 `WacomInputTest.exe` 또는 macOS의 `WacomInputTest.app`을 실행하면 브리지가
+시작되고 시스템 기본 브라우저에서
 <http://127.0.0.1:8765>가 자동으로 열립니다. 웹 화면은 실행 파일 안에
 포함되어 있으므로 다른 파일을 함께 복사할 필요가 없습니다.
 

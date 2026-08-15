@@ -53,3 +53,14 @@ on the same cancellation path. Shutdown stops and disposes Kestrel, unregisters
 Wacom callbacks, closes the Wintab context, completes the input channel, and
 waits for the WebSocket event pump. A localhost bind/startup failure returns exit
 code 3 instead of leaving partially initialized native resources alive.
+
+The Windows status payload explicitly reports `native.platform = "windows"`.
+Protocol 1 remains unchanged; the shared web UI prefers common macOS fields when
+present and otherwise uses the existing WacomMT state and Wintab axis, pressure,
+orientation, status, and button fields.
+
+Run the shared-UI protocol regression test from the repository root:
+
+```sh
+node native-bridge/bridge/web-compat-test.mjs
+```

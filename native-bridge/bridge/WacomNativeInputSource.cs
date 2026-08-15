@@ -78,6 +78,7 @@ internal sealed class WacomNativeInputSource : IDisposable
     public NativeInputStatus GetStatus()
     {
         return new NativeInputStatus(
+            "windows",
             TouchReady,
             PenReady,
             _touchDevices.ToArray(),

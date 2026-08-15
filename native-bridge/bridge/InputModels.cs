@@ -61,6 +61,7 @@ internal sealed record TouchDeviceInfo(
     bool SensitivityAvailable);
 
 internal sealed record NativeInputStatus(
+    string Platform,
     bool TouchReady,
     bool PenReady,
     IReadOnlyList<TouchDeviceInfo> TouchDevices,
