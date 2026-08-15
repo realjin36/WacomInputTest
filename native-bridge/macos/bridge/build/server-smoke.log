@@ -1,0 +1,6 @@
+Wacom macOS local bridge
+HTTP=http://127.0.0.1:8765
+WebSocket=ws://127.0.0.1:8765/ws
+webRoot=/Users/jintaegyu/Documents/WebInputTest/dist/macos/WacomInputTest.app/Contents/Resources/Web
+protocolVersion=2 touchReady=1 penReady=1
+SUMMARY produced=0 touchFrames=0 touchContacts=0 penPackets=0 proximity=0 inputDropped=0 truncatedTouchFrames=0 deduplicatedPen=0 broadcast=0 clientDropped=0

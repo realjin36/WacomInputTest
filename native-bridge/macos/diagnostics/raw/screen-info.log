@@ -1,0 +1,14 @@
+screen[0]
+  name=Built-in Retina Display
+  number=1
+  frame={{0, 0}, {1512, 982}}
+  visibleFrame={{0, 0}, {1512, 949}}
+  backingScaleFactor=2.0
+  resolution=NSSize: {144, 144}
+screen[1]
+  name=CintiqPro24PT
+  number=2
+  frame={{-193, 982}, {1920, 1080}}
+  visibleFrame={{-193, 982}, {1920, 1080}}
+  backingScaleFactor=2.0
+  resolution=NSSize: {144, 144}

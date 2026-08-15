@@ -1,0 +1,77 @@
+duration=25s
+touchPID=75454 penPID=75455
+sample=2026-08-15T15:08:13+0900
+75454   0.0   6992 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   0.0   9632 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:14+0900
+75454   0.6  33168 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   2.8  55120 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:15+0900
+75454   0.3  33184 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   0.7  55136 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:16+0900
+75454   3.0  33264 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   8.5  55168 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:17+0900
+75454   3.3  33312 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   8.7  55232 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:18+0900
+75454   3.6  33264 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   8.5  55296 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:19+0900
+75454   3.5  33216 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   8.2  55296 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:20+0900
+75454   3.3  33216 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   9.9  55296 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:21+0900
+75454   4.9  33200 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   4.2  55248 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:22+0900
+75454   5.0  33200 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   2.6  55248 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:23+0900
+75454   4.0  33200 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   0.5  55248 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:24+0900
+75454   1.5  33232 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   0.5  55248 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:25+0900
+75454   0.1  33232 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   0.9  55648 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:26+0900
+75454   0.3  33232 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   0.4  55648 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:27+0900
+75454   0.2  33232 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   0.5  55648 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:28+0900
+75454   0.8  33232 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   1.2  55648 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:29+0900
+75454   1.8  33232 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   2.9  55648 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:30+0900
+75454   1.9  33232 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   4.9  55648 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:31+0900
+75454   0.7  33232 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   1.2  55648 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:32+0900
+75454   0.3  33232 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   0.5  55648 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:33+0900
+75454   0.4  33232 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   0.5  55648 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:34+0900
+75454   0.3  33232 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   0.4  55648 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:35+0900
+75454   0.3  33248 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   0.5  55664 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:36+0900
+75454   0.3  33248 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   0.5  55616 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25
+sample=2026-08-15T15:08:37+0900
+75454   0.3  33264 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/touch-probe/build/WacomTouchProbe.app/Contents/MacOS/WacomTouchProbe --duration 25
+75455   0.4  55616 /Users/jintaegyu/Documents/WebInputTest/native-bridge/macos/pen-probe/build/WacomPenProbe.app/Contents/MacOS/WacomPenProbe --duration 25

@@ -1,0 +1,14 @@
+C:\Users\Sketchlab\Desktop\WebTest\native-bridge\bin\Release\net10.0-windows\WacomInputProbe.exe
+C:\Users\Sketchlab\Desktop\WebTest\native-bridge\bin\Release\net10.0-windows\WacomInputProbe.deps.json
+C:\Users\Sketchlab\Desktop\WebTest\native-bridge\bin\Release\net10.0-windows\WacomInputProbe.runtimeconfig.json
+C:\Users\Sketchlab\Desktop\WebTest\native-bridge\bin\Release\net10.0-windows\WacomInputProbe.dll
+C:\Users\Sketchlab\Desktop\WebTest\native-bridge\bin\Release\net10.0-windows\WacomInputProbe.pdb
+C:\Users\Sketchlab\Desktop\WebTest\native-bridge\obj\Release\net10.0-windows\WacomInputProbe.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Sketchlab\Desktop\WebTest\native-bridge\obj\Release\net10.0-windows\WacomInputProbe.AssemblyInfoInputs.cache
+C:\Users\Sketchlab\Desktop\WebTest\native-bridge\obj\Release\net10.0-windows\WacomInputProbe.AssemblyInfo.cs
+C:\Users\Sketchlab\Desktop\WebTest\native-bridge\obj\Release\net10.0-windows\WacomInputProbe.csproj.CoreCompileInputs.cache
+C:\Users\Sketchlab\Desktop\WebTest\native-bridge\obj\Release\net10.0-windows\WacomInputProbe.dll
+C:\Users\Sketchlab\Desktop\WebTest\native-bridge\obj\Release\net10.0-windows\refint\WacomInputProbe.dll
+C:\Users\Sketchlab\Desktop\WebTest\native-bridge\obj\Release\net10.0-windows\WacomInputProbe.pdb
+C:\Users\Sketchlab\Desktop\WebTest\native-bridge\obj\Release\net10.0-windows\WacomInputProbe.genruntimeconfig.cache
+C:\Users\Sketchlab\Desktop\WebTest\native-bridge\obj\Release\net10.0-windows\ref\WacomInputProbe.dll
