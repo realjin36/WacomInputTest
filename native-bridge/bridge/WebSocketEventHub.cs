@@ -61,12 +61,13 @@ internal sealed class WebSocketEventHub
             {
                 try
                 {
-                    await socket.CloseAsync(
+                    using var closeTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                    await socket.CloseOutputAsync(
                         WebSocketCloseStatus.NormalClosure,
                         "bridge closing",
-                        CancellationToken.None);
+                        closeTimeout.Token);
                 }
-                catch (WebSocketException)
+                catch (Exception exception) when (exception is WebSocketException or OperationCanceledException)
                 {
                 }
             }

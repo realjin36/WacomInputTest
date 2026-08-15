@@ -64,7 +64,7 @@ internal sealed class BridgeRuntime : IAsyncDisposable
             _input = new WacomNativeInputSource();
             _input.Start();
             _hub = new WebSocketEventHub();
-            _app = BuildWebApplication(_input, _hub);
+            _app = BuildWebApplication(_input, _hub, lifetime.Token);
             pumpTask = _hub.PumpAsync(_input.Events, lifetime.Token);
 
             await _app.StartAsync(lifetime.Token);
@@ -176,7 +176,8 @@ internal sealed class BridgeRuntime : IAsyncDisposable
 
     private WebApplication BuildWebApplication(
         WacomNativeInputSource input,
-        WebSocketEventHub hub)
+        WebSocketEventHub hub,
+        CancellationToken runtimeCancellation)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -210,6 +211,9 @@ internal sealed class BridgeRuntime : IAsyncDisposable
             }
 
             using var socket = await context.WebSockets.AcceptWebSocketAsync();
+            using var connectionLifetime = CancellationTokenSource.CreateLinkedTokenSource(
+                context.RequestAborted,
+                runtimeCancellation);
             await hub.HandleClientAsync(
                 socket,
                 () => new
@@ -220,7 +224,7 @@ internal sealed class BridgeRuntime : IAsyncDisposable
                 },
                 (clientId, message) => HandleClientMessage(input, clientId, message),
                 input.RemoveBrowserClient,
-                context.RequestAborted);
+                connectionLifetime.Token);
         });
 
         MapWebAsset(app, "/", "index.html", "text/html; charset=utf-8");
