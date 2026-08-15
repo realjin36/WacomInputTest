@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
@@ -231,6 +232,8 @@ internal sealed class StatusDot : Control
 {
     private Color _dotColor = Color.Gray;
 
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color DotColor
     {
         get => _dotColor;
@@ -259,8 +262,16 @@ internal sealed class StatusDot : Control
 
 internal sealed class RoundedPanel : Panel
 {
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color FillColor { get; init; } = Color.White;
+
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color BorderColor { get; init; } = Color.LightGray;
+
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public int CornerRadius { get; init; } = 10;
 
     public RoundedPanel()
@@ -305,9 +316,20 @@ internal sealed class FeedbackButton : Button
     private bool _hovered;
     private bool _pressed;
 
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color NormalColor { get; init; } = Color.Gainsboro;
+
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color HoverColor { get; init; } = Color.LightGray;
+
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color PressedColor { get; init; } = Color.Silver;
+
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public Color TextColor { get; init; } = Color.Black;
 
     public FeedbackButton()
