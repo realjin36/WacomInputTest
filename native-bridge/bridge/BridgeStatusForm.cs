@@ -96,7 +96,7 @@ internal sealed class BridgeStatusForm : Form
             PressedColor = Color.FromArgb(199, 210, 226),
             TextColor = Color.FromArgb(41, 56, 77)
         };
-        _openButton.Click += (_, _) => Program.OpenChrome(url);
+        _openButton.Click += (_, _) => BrowserLauncher.OpenDefault(url);
 
         _quitButton = new FeedbackButton
         {

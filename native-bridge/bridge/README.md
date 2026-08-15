@@ -29,7 +29,8 @@ bounded queue so that one slow browser cannot stall native input capture.
 X/Y native axis bounds. The web UI uses those values to map both devices into
 the same canvas.
 
-Run `..\run-bridge.cmd`, then open <http://127.0.0.1:8765> in Chrome.
+Run `..\run-bridge.cmd`. The bridge opens <http://127.0.0.1:8765> in the
+Windows default browser.
 
 ## Runtime lifecycle
 

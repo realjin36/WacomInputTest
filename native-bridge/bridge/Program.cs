@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Windows.Forms;
 
 namespace WacomLocalBridge;
@@ -61,36 +60,8 @@ internal static class Program
         {
             if (options.OpenBrowser)
             {
-                OpenChrome(options.Url);
+                BrowserLauncher.OpenDefault(options.Url);
             }
         };
-    }
-
-    // Kept unchanged for the status-window stage. Stage 4 replaces this with
-    // the Windows default-browser path used by startup and the window button.
-    internal static void OpenChrome(string url)
-    {
-        var candidates = new[]
-        {
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Google", "Chrome", "Application", "chrome.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Google", "Chrome", "Application", "chrome.exe"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google", "Chrome", "Application", "chrome.exe")
-        };
-
-        var chrome = candidates.FirstOrDefault(File.Exists);
-        try
-        {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = chrome ?? url,
-                Arguments = chrome is null ? "" : url,
-                UseShellExecute = true
-            });
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine($"Chrome 자동 실행 실패: {exception.Message}");
-            Console.WriteLine($"직접 접속: {url}");
-        }
     }
 }
