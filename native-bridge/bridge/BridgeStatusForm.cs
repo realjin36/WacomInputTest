@@ -50,8 +50,8 @@ internal sealed class BridgeStatusForm : Form
         _heading = new Label
         {
             AutoSize = false,
-            Location = new Point(24, 24),
-            Size = new Size(304, 28),
+            Location = new Point(24, 20),
+            Size = new Size(304, 36),
             Text = "앱 시작 중…",
             Font = new Font("Segoe UI", 11F, FontStyle.Bold, GraphicsUnit.Point),
             BackColor = Color.Transparent
