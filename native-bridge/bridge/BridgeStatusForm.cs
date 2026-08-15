@@ -29,7 +29,7 @@ internal sealed class BridgeStatusForm : Form
         _runtime = runtime;
 
         Text = "Wacom Input Test";
-        ClientSize = new Size(400, 388);
+        ClientSize = new Size(400, 420);
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         StartPosition = FormStartPosition.CenterScreen;
@@ -40,7 +40,7 @@ internal sealed class BridgeStatusForm : Form
         var statusPanel = new RoundedPanel
         {
             Location = new Point(24, 24),
-            Size = new Size(352, 196),
+            Size = new Size(352, 230),
             FillColor = Color.FromArgb(250, 250, 251),
             BackColor = Color.FromArgb(250, 250, 251),
             BorderColor = Color.FromArgb(225, 227, 230),
@@ -51,7 +51,7 @@ internal sealed class BridgeStatusForm : Form
         {
             AutoSize = false,
             Location = new Point(24, 24),
-            Size = new Size(304, 26),
+            Size = new Size(304, 28),
             Text = "앱 시작 중…",
             Font = new Font("Segoe UI", 11F, FontStyle.Bold, GraphicsUnit.Point),
             BackColor = Color.Transparent
@@ -59,25 +59,25 @@ internal sealed class BridgeStatusForm : Form
 
         _touchDot = new StatusDot
         {
-            Location = new Point(24, 69),
+            Location = new Point(24, 83),
             Size = new Size(10, 10),
             DotColor = Gray
         };
-        _touchLabel = CreateStatusLabel("터치 확인 중", new Point(44, 61));
+        _touchLabel = CreateStatusLabel("터치 확인 중", new Point(44, 72));
 
         _penDot = new StatusDot
         {
-            Location = new Point(24, 105),
+            Location = new Point(24, 131),
             Size = new Size(10, 10),
             DotColor = Gray
         };
-        _penLabel = CreateStatusLabel("펜 확인 중", new Point(44, 97));
+        _penLabel = CreateStatusLabel("펜 확인 중", new Point(44, 120));
 
         _metrics = new Label
         {
             AutoSize = false,
-            Location = new Point(24, 139),
-            Size = new Size(304, 42),
+            Location = new Point(24, 168),
+            Size = new Size(304, 46),
             Text = "이벤트 0  ·  브라우저 0\r\n누락: 입력 0  ·  클라이언트 0",
             ForeColor = Color.FromArgb(99, 105, 114),
             Font = new Font("Segoe UI", 9.25F, FontStyle.Regular, GraphicsUnit.Point),
@@ -88,7 +88,7 @@ internal sealed class BridgeStatusForm : Form
 
         _openButton = new FeedbackButton
         {
-            Location = new Point(24, 236),
+            Location = new Point(24, 270),
             Size = new Size(352, 50),
             Text = "브라우저 열기",
             NormalColor = Color.FromArgb(232, 237, 245),
@@ -100,7 +100,7 @@ internal sealed class BridgeStatusForm : Form
 
         _quitButton = new FeedbackButton
         {
-            Location = new Point(24, 302),
+            Location = new Point(24, 336),
             Size = new Size(352, 50),
             Text = "종료",
             NormalColor = Color.FromArgb(199, 79, 84),
@@ -151,7 +151,7 @@ internal sealed class BridgeStatusForm : Form
         {
             AutoSize = false,
             Location = location,
-            Size = new Size(284, 28),
+            Size = new Size(284, 32),
             Text = text,
             Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point),
             BackColor = Color.Transparent
