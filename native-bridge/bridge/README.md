@@ -33,10 +33,11 @@ Run `..\run-bridge.cmd`, then open <http://127.0.0.1:8765> in Chrome.
 
 ## Runtime lifecycle
 
-`BridgeRuntime` now owns native input, Kestrel, the WebSocket pump, cancellation,
-status snapshots, and cleanup. `Program` is only the current console entry point;
-the WinForms status window can run the same runtime without moving callback or
-server work onto the UI thread.
+`BridgeRuntime` owns native input, Kestrel, the WebSocket pump, cancellation,
+status snapshots, and cleanup. Normal execution runs a fixed-size WinForms
+status window while the bridge stays on background threads. The window reports
+Touch/Pen readiness, event/client counters and drop counters, and exposes browser
+and clean-shutdown buttons.
 
 Runtime options:
 
@@ -44,7 +45,7 @@ Runtime options:
 - `--web-root PATH`
 - `--duration SECONDS`
 - `--no-browser`
-- `--no-window` (reserved for the WinForms/headless split in the next stage)
+- `--no-window` (run the bridge headlessly for diagnostics and automation)
 
 `RequestStop`, Ctrl+C, duration expiry, and the future GUI close action converge
 on the same cancellation path. Shutdown stops and disposes Kestrel, unregisters

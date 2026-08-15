@@ -1,11 +1,12 @@
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace WacomLocalBridge;
 
 internal static class Program
 {
     [STAThread]
-    private static async Task<int> Main(string[] args)
+    private static int Main(string[] args)
     {
         BridgeOptions options;
         try
@@ -18,6 +19,30 @@ internal static class Program
             return 64;
         }
 
+        return options.ShowWindow
+            ? RunWithWindow(options)
+            : RunHeadlessAsync(options).GetAwaiter().GetResult();
+    }
+
+    private static int RunWithWindow(BridgeOptions options)
+    {
+        ApplicationConfiguration.Initialize();
+
+        var runtime = new BridgeRuntime(options);
+        ConfigureBrowserLaunch(runtime, options);
+        using var window = new BridgeStatusForm(runtime, options.Url);
+        var runtimeTask = runtime.RunAsync();
+        window.AttachRuntimeTask(runtimeTask);
+
+        Application.Run(window);
+        runtime.RequestStop();
+        var exitCode = runtimeTask.GetAwaiter().GetResult();
+        runtime.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        return exitCode;
+    }
+
+    private static async Task<int> RunHeadlessAsync(BridgeOptions options)
+    {
         using var shutdown = new CancellationTokenSource();
         Console.CancelKeyPress += (_, eventArgs) =>
         {
@@ -26,6 +51,12 @@ internal static class Program
         };
 
         await using var runtime = new BridgeRuntime(options);
+        ConfigureBrowserLaunch(runtime, options);
+        return await runtime.RunAsync(shutdown.Token);
+    }
+
+    private static void ConfigureBrowserLaunch(BridgeRuntime runtime, BridgeOptions options)
+    {
         runtime.Started += () =>
         {
             if (options.OpenBrowser)
@@ -33,12 +64,11 @@ internal static class Program
                 OpenChrome(options.Url);
             }
         };
-        return await runtime.RunAsync(shutdown.Token);
     }
 
-    // Kept unchanged for the lifecycle refactor. Stage 4 replaces this with
-    // the Windows default-browser launch path shared by startup and the GUI.
-    private static void OpenChrome(string url)
+    // Kept unchanged for the status-window stage. Stage 4 replaces this with
+    // the Windows default-browser path used by startup and the window button.
+    internal static void OpenChrome(string url)
     {
         var candidates = new[]
         {

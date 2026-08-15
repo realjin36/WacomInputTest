@@ -72,3 +72,21 @@ fallback한다.
 가능하지만 Windows WinForms 빌드 및 Wacom native runtime 검증은 Windows x64 장치에서
 수행해야 한다. 빌드 단계가 준비되면 사용자에게 Windows에서 실행할 명령과 확인할 결과를
 요청한다.
+
+## 2단계 Windows 검증 결과
+
+검증일: 2026-08-15  
+검증 환경: Windows x64 + Wacom Cintiq
+
+- `WacomLocalBridge.csproj` Release/win-x64 빌드 성공
+- 새 `BridgeRuntime`, `BridgeOptions`, `BridgeStatus` 컴파일 성공
+- headless 실행 옵션 `--no-window --no-browser --duration 5` 정상 처리
+- `http://127.0.0.1:8765` Kestrel 시작 성공
+- Touch ready: `True`
+- Pen ready: `True`
+- 5초 후 Application shutdown 및 summary 출력 확인
+- 종료 시 input/WebSocket drop: 0/0
+
+빌드 출력의 경고는 `vendor/wacom/WacomMTDN`과 `vendor/wacom/WintabDN`의 기존 nullable
+annotation 및 analyzer 경고다. 이번 수명주기 분리 코드에서는 컴파일 경고나 오류가
+보고되지 않았다. 공식 vendor 사본은 이 단계에서 수정하지 않는다.
