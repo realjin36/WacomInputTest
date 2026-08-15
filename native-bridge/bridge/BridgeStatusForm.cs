@@ -29,20 +29,20 @@ internal sealed class BridgeStatusForm : Form
         _runtime = runtime;
 
         Text = "Wacom Input Test";
-        ClientSize = new Size(360, 320);
-        MinimumSize = Size;
-        MaximumSize = Size;
+        ClientSize = new Size(400, 388);
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         StartPosition = FormStartPosition.CenterScreen;
         BackColor = Color.White;
         Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+        AutoScaleMode = AutoScaleMode.Dpi;
 
         var statusPanel = new RoundedPanel
         {
             Location = new Point(24, 24),
-            Size = new Size(312, 140),
+            Size = new Size(352, 196),
             FillColor = Color.FromArgb(250, 250, 251),
+            BackColor = Color.FromArgb(250, 250, 251),
             BorderColor = Color.FromArgb(225, 227, 230),
             CornerRadius = 10
         };
@@ -50,8 +50,8 @@ internal sealed class BridgeStatusForm : Form
         _heading = new Label
         {
             AutoSize = false,
-            Location = new Point(20, 20),
-            Size = new Size(272, 24),
+            Location = new Point(24, 24),
+            Size = new Size(304, 26),
             Text = "앱 시작 중…",
             Font = new Font("Segoe UI", 11F, FontStyle.Bold, GraphicsUnit.Point),
             BackColor = Color.Transparent
@@ -59,28 +59,28 @@ internal sealed class BridgeStatusForm : Form
 
         _touchDot = new StatusDot
         {
-            Location = new Point(20, 57),
+            Location = new Point(24, 69),
             Size = new Size(10, 10),
             DotColor = Gray
         };
-        _touchLabel = CreateStatusLabel("터치 확인 중", new Point(38, 51));
+        _touchLabel = CreateStatusLabel("터치 확인 중", new Point(44, 61));
 
         _penDot = new StatusDot
         {
-            Location = new Point(164, 57),
+            Location = new Point(24, 105),
             Size = new Size(10, 10),
             DotColor = Gray
         };
-        _penLabel = CreateStatusLabel("펜 확인 중", new Point(182, 51));
+        _penLabel = CreateStatusLabel("펜 확인 중", new Point(44, 97));
 
         _metrics = new Label
         {
             AutoSize = false,
-            Location = new Point(20, 86),
-            Size = new Size(272, 40),
+            Location = new Point(24, 139),
+            Size = new Size(304, 42),
             Text = "이벤트 0  ·  브라우저 0\r\n누락: 입력 0  ·  클라이언트 0",
             ForeColor = Color.FromArgb(99, 105, 114),
-            Font = new Font("Consolas", 9F, FontStyle.Regular, GraphicsUnit.Point),
+            Font = new Font("Segoe UI", 9.25F, FontStyle.Regular, GraphicsUnit.Point),
             BackColor = Color.Transparent
         };
 
@@ -88,8 +88,8 @@ internal sealed class BridgeStatusForm : Form
 
         _openButton = new FeedbackButton
         {
-            Location = new Point(24, 180),
-            Size = new Size(312, 48),
+            Location = new Point(24, 236),
+            Size = new Size(352, 50),
             Text = "브라우저 열기",
             NormalColor = Color.FromArgb(232, 237, 245),
             HoverColor = Color.FromArgb(219, 227, 239),
@@ -100,8 +100,8 @@ internal sealed class BridgeStatusForm : Form
 
         _quitButton = new FeedbackButton
         {
-            Location = new Point(24, 244),
-            Size = new Size(312, 48),
+            Location = new Point(24, 302),
+            Size = new Size(352, 50),
             Text = "종료",
             NormalColor = Color.FromArgb(199, 79, 84),
             HoverColor = Color.FromArgb(212, 93, 98),
@@ -151,7 +151,7 @@ internal sealed class BridgeStatusForm : Form
         {
             AutoSize = false,
             Location = location,
-            Size = new Size(112, 24),
+            Size = new Size(284, 28),
             Text = text,
             Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point),
             BackColor = Color.Transparent
@@ -255,6 +255,7 @@ internal sealed class StatusDot : Control
     protected override void OnPaint(PaintEventArgs eventArgs)
     {
         eventArgs.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        eventArgs.Graphics.Clear(Parent?.BackColor ?? Color.White);
         using var brush = new SolidBrush(DotColor);
         eventArgs.Graphics.FillEllipse(brush, ClientRectangle);
     }
@@ -283,6 +284,7 @@ internal sealed class RoundedPanel : Panel
     protected override void OnPaintBackground(PaintEventArgs eventArgs)
     {
         eventArgs.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        eventArgs.Graphics.Clear(Parent?.BackColor ?? Color.White);
         using var path = CreateRoundedRectangle(ClientRectangle, CornerRadius);
         using var brush = new SolidBrush(FillColor);
         eventArgs.Graphics.FillPath(brush, path);
@@ -382,6 +384,7 @@ internal sealed class FeedbackButton : Button
     protected override void OnPaint(PaintEventArgs eventArgs)
     {
         eventArgs.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        eventArgs.Graphics.Clear(Parent?.BackColor ?? Color.White);
         var color = _pressed ? PressedColor : _hovered ? HoverColor : NormalColor;
         if (!Enabled) color = Color.FromArgb(140, color);
 
