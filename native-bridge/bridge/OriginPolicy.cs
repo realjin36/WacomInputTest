@@ -35,7 +35,7 @@ internal sealed class OriginPolicy
         normalized = string.Empty;
         host = string.Empty;
         if (!Uri.TryCreate(origin, UriKind.Absolute, out var uri) ||
-            uri.Scheme is not (Uri.UriSchemeHttp or Uri.UriSchemeHttps) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps) ||
             !string.IsNullOrEmpty(uri.UserInfo) ||
             uri.AbsolutePath != "/" ||
             !string.IsNullOrEmpty(uri.Query) ||
