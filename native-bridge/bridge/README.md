@@ -64,3 +64,25 @@ Run the shared-UI protocol regression test from the repository root:
 ```sh
 node native-bridge/bridge/web-compat-test.mjs
 ```
+
+## Product build
+
+From a Windows PowerShell prompt at the repository root:
+
+```powershell
+.\native-bridge\build-windows.ps1
+```
+
+The script requires the .NET 10 SDK and publishes a self-contained, compressed,
+single-file, x64 GUI executable to `dist\windows\WacomInputTest.exe`. It verifies
+that the output is an x64 PE with the Windows GUI subsystem and writes a SHA-256
+file beside it. The product does not require a separately installed .NET runtime;
+the Wacom driver still supplies `WacomMT.dll` and `Wintab32.dll` at runtime.
+
+For source diagnostics with a console, override the subsystem and disable the UI:
+
+```powershell
+dotnet run --project .\native-bridge\bridge\WacomLocalBridge.csproj `
+  --configuration Release -p:WacomHeadlessBuild=true -- `
+  --no-window --no-browser --duration 5
+```
