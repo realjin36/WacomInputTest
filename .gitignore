@@ -9,3 +9,8 @@ native-bridge/single-file/
 .DS_Store
 *.user
 *.suo
+
+# Local implementation handoff and planning records
+/MACOS_HANDOFF.md
+/native-bridge/WINDOWS_BASELINE.md
+/docs/SEPARATION_CONTRACT.md

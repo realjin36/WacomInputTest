@@ -3,7 +3,7 @@
 작성일: 2026-08-15  
 대상 장치: Cintiq Pro 24 Touch, Wacom 드라이버 6.4.13-4
 
-이 문서는 `MACOS_HANDOFF.md`의 첫 작업 순서 6번 결과다. 값은 가능한 한 변환하지 않은
+이 문서는 macOS 네이티브 입력 필드 조사 결과다. 값은 가능한 한 변환하지 않은
 원시 값과 화면 표시용 값을 함께 보존한다.
 
 ## 1. 테스트 당시 화면 배치
@@ -151,4 +151,3 @@ point event도 native tablet event 또는 mouse event의 `tabletPoint(1)` subtyp
 - Apple `pressure`: <https://developer.apple.com/documentation/appkit/nsevent/pressure>
 - Apple `tilt`: <https://developer.apple.com/documentation/appkit/nsevent/tilt>
 - Apple `buttonMask`: <https://developer.apple.com/documentation/appkit/nsevent/buttonmask-swift.property>
-

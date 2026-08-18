@@ -160,7 +160,6 @@ http://127.0.0.1:8080/?bridge=http://127.0.0.1:9876
 
 ```text
 docs/PROTOCOL.md                  public integration protocol
-docs/SEPARATION_CONTRACT.md       bridge/example product boundary
 examples/web-monitor/            independently run example client
 native-bridge/bridge/             Windows bridge host (.NET/WinForms)
 native-bridge/bridge-tests/       Windows native contract tests
@@ -168,9 +167,6 @@ native-bridge/macos/bridge/       macOS bridge host (Objective-C++)
 native-bridge/macos/diagnostics/  actual-device diagnostic records and tools
 native-bridge/vendor/             Wacom Windows wrapper source and license
 ```
-
-`MACOS_HANDOFF.md` and `native-bridge/WINDOWS_BASELINE.md` are historical
-implementation records and may describe earlier bundled-monitor builds.
 
 ## Runtime dependencies and licensing
 

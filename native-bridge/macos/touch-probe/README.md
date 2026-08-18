@@ -1,6 +1,6 @@
 # macOS Wacom touch probe
 
-Minimal diagnostic program for step 4 of `MACOS_HANDOFF.md`.
+Minimal diagnostic program for validating native Wacom touch input on macOS.
 
 - Uses the project-local copies of the Wacom API headers.
 - Weak-links the driver-installed `WacomMultiTouch.framework` at runtime.

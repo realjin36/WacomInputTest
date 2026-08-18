@@ -4,7 +4,7 @@
 대상 장치: Cintiq Pro 24 Touch  
 실행 도구: `run-concurrent.sh`
 
-이 문서는 `MACOS_HANDOFF.md`의 첫 작업 순서 7번 결과다.
+이 문서는 macOS 터치·펜 동시 입력 조사 결과다.
 
 ## 1. 정상 종료된 25초 테스트
 
@@ -114,4 +114,3 @@ t=17.947         touch ID 0,1 up
 - `raw/concurrent-interrupted-touch.log`: 최대 5접점 장시간 표본
 - `raw/concurrent-interrupted-pen.log`: 장시간 pen 표본
 - `raw/concurrent-interrupted-performance.log`: 장시간 자원 표본
-

@@ -1,6 +1,6 @@
 # macOS AppKit pen probe
 
-Minimal diagnostic program for step 5 of `MACOS_HANDOFF.md`.
+Minimal diagnostic program for validating native macOS pen input.
 
 - Installs both AppKit global and local event monitors.
 - Observes native tablet point/proximity events and tablet subtypes attached to

@@ -46,8 +46,6 @@ Wacom Cintiq that:
   localhost server;
 - the package contains no example-monitor files or manifest resources.
 
-The pre-separation device-validation history remains in `WINDOWS_BASELINE.md`.
-
 ## Distribution
 
 The build script does not perform Authenticode signing. Sign a public release
