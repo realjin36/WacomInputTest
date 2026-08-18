@@ -108,3 +108,21 @@ annotation 및 analyzer 경고다. 이번 수명주기 분리 코드에서는 �
 
 빌드의 49개 경고는 모두 기존 Wacom vendor wrapper의 nullable annotation 및 analyzer
 경고다. 프로젝트 자체에서 발생했던 중복 DPI manifest 경고는 제거했다.
+
+## 7단계 자동 회귀 테스트 결과
+
+검증일: 2026-08-18
+
+검증 환경: Windows x64, .NET SDK 10.0.400, Node.js 22.13.0
+
+- `BridgeOptions` 기본값, 플래그, URL 정규화 테스트 통과
+- 불완전한 인수와 localhost 외부 URL 차단 테스트 통과
+- protocol 1 camelCase JSON 계약 테스트 통과
+- 제품 어셈블리의 내장 웹 리소스 3종 검사 통과
+- WebSocket hello 및 입력 이벤트 전송 테스트 통과
+- 느린 클라이언트의 bounded queue drop 집계 테스트 통과
+- 네이티브 계약 테스트: 7/7 통과
+- 공통 웹 UI Windows fallback 호환성 테스트 통과
+
+`native-bridge/test-windows.ps1`에서 전체 회귀 테스트를 독립 실행할 수 있으며,
+`native-bridge/build-windows.ps1`도 publish 전에 같은 테스트를 자동 실행한다.
