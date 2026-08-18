@@ -21,6 +21,11 @@ internal sealed record BridgeOptions(
             {
                 url = args[++index];
             }
+            else if (args[index] == "--port" && index + 1 < args.Length &&
+                     int.TryParse(args[++index], out var port) && port is >= 1 and <= 65535)
+            {
+                url = $"http://127.0.0.1:{port}";
+            }
             else if (args[index] == "--duration" && index + 1 < args.Length &&
                      double.TryParse(args[++index], out var seconds) && seconds > 0)
             {

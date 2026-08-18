@@ -55,14 +55,14 @@ internal static class Program
     {
         var options = BridgeOptions.Parse(
         [
-            "--url", "http://localhost:9876/",
+            "--port", "9876",
             "--duration", "1.5",
             "--no-window",
             "--allowed-origin", "https://Example.com:443/",
             "--allowed-origin", "http://tools.example:8080"
         ]);
 
-        Equal("http://localhost:9876", options.Url);
+        Equal("http://127.0.0.1:9876", options.Url);
         Equal(TimeSpan.FromSeconds(1.5), options.Duration);
         False(options.ShowWindow);
         Equal(2, options.AllowedOrigins.Length);
@@ -75,6 +75,9 @@ internal static class Program
     {
         Throws<ArgumentException>(() => BridgeOptions.Parse(["--unknown"]));
         Throws<ArgumentException>(() => BridgeOptions.Parse(["--url"]));
+        Throws<ArgumentException>(() => BridgeOptions.Parse(["--port"]));
+        Throws<ArgumentException>(() => BridgeOptions.Parse(["--port", "0"]));
+        Throws<ArgumentException>(() => BridgeOptions.Parse(["--port", "65536"]));
         Throws<ArgumentException>(() => BridgeOptions.Parse(["--duration", "0"]));
         Throws<ArgumentException>(() => BridgeOptions.Parse(["--url", "https://127.0.0.1:8765"]));
         Throws<ArgumentException>(() => BridgeOptions.Parse(["--url", "http://0.0.0.0:8765"]));
@@ -84,6 +87,7 @@ internal static class Program
         Throws<ArgumentException>(() => BridgeOptions.Parse(["--allowed-origin"]));
         Throws<ArgumentException>(() => BridgeOptions.Parse(["--allowed-origin", "*"]));
         Throws<ArgumentException>(() => BridgeOptions.Parse(["--allowed-origin", "https://example.com/path"]));
+        Equal("http://localhost:9876", BridgeOptions.Parse(["--url", "http://localhost:9876/"]).Url);
         return Task.CompletedTask;
     }
 

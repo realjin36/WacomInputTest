@@ -2,6 +2,9 @@
 
 > 이 문서는 Windows 제품화 과정의 기준선과 검증 기록이다. 당시의
 > `WacomInputTest` 이름은 현재 `WacomNativeBridge`로 변경되었다.
+> 웹 모니터 내장, 브라우저 자동 실행, 예전 옵션과 파일명에 관한 내용은 과거 기록이다.
+> 현재 동작과 배포 절차는 저장소 `README.md`, `docs/PROTOCOL.md`,
+> `native-bridge/WINDOWS_RELEASE.md`를 기준으로 한다.
 
 확인일: 2026-08-15
 

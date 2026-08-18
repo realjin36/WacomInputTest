@@ -1,11 +1,11 @@
-# Wacom Native Input Bridge — Windows x64
+# Wacom Native Input Bridge — Windows x64 release
 
-The Windows deliverable is generated at:
+The Windows deliverables are:
 
 - `dist/windows/WacomNativeBridge.exe`
 - `dist/windows/WacomNativeBridge.exe.sha256`
 
-It is a self-contained, compressed, single-file Windows GUI executable. A
+The executable is a self-contained, compressed, single-file Windows GUI app. A
 separate .NET runtime is not required. The installed Wacom driver supplies
 `WacomMT.dll` and `Wintab32.dll` at runtime.
 
@@ -15,35 +15,41 @@ Requirements:
 
 - Windows x64
 - .NET 10 SDK
-- Node.js
 - Wacom driver for actual-device verification
+
+Node.js is not required for bridge tests or builds.
 
 From the repository root:
 
 ```powershell
+.\native-bridge\test-windows.ps1
 .\native-bridge\build-windows.ps1
 ```
 
-The build script first runs the native contract tests and example-client protocol
-test. It then verifies that the output is a single x64 PE using the Windows GUI
-subsystem and writes its SHA-256 checksum.
+The build runs native contract tests, publishes one x64 Windows GUI executable,
+verifies its PE machine/subsystem fields, and writes a SHA-256 checksum.
 
-## Runtime verification
+## Release verification
 
-The bridge behavior was validated on Windows x64 with a Wacom Cintiq:
+Before publishing a separated-bridge release, verify on Windows x64 with a
+Wacom Cintiq that:
 
-- Touch and pen native sources report ready
-- Single and multi-touch frames are delivered
-- Pen hover, pressure, tilt, buttons, eraser, and proximity are delivered
-- Two touches and pen input work concurrently in the intended usage range
-- The default browser opens the bundled example monitor
-- Closing the status window stops callbacks, WebSockets, and the localhost server
-- Native contract tests pass 7/7
+- touch and pen sources report ready;
+- `GET /` returns the JSON service descriptor;
+- `/index.html`, `/app.js`, and `/styles.css` return `404`;
+- allowed loopback origins receive CORS headers and external origins are denied;
+- WebSocket hello, touch frames, pen hover/pressure/tilt/buttons/eraser, and
+  proximity are delivered;
+- intended simultaneous touch and pen input works without drops;
+- no browser opens when the executable starts;
+- the status-window Quit and close controls stop callbacks, WebSockets, and the
+  localhost server;
+- the package contains no example-monitor files or manifest resources.
 
-The original device-validation record is preserved in `WINDOWS_BASELINE.md`.
+The pre-separation device-validation history remains in `WINDOWS_BASELINE.md`.
 
-## Distribution note
+## Distribution
 
-The build script does not perform Authenticode signing. Sign the final executable
-with your organization's certificate before public distribution. Generated
-binaries should be attached to a GitHub Release rather than committed as source.
+The build script does not perform Authenticode signing. Sign a public release
+with your organization's certificate. Attach generated binaries to a GitHub
+Release rather than committing them to the source tree.

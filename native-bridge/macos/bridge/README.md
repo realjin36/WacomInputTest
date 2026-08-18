@@ -1,50 +1,54 @@
-# macOS native input bridge
+# macOS native bridge host
 
-This target combines the validated WacomMultiTouch callback and AppKit tablet
-event monitors with the localhost HTTP/WebSocket contract used by the Windows
-bridge.
+The macOS host combines WacomMultiTouch callbacks and AppKit tablet events with
+the same localhost contract used by the Windows bridge. It does not contain or
+serve the example monitor and does not open a browser.
 
-Protocol version 2 is additive: the existing `touch.frame`, `pen.packet`, and
-`pen.proximity` event names and compatibility fields remain. AppKit pen packets
-also include `screenX`, `screenY`, `absoluteX/Y/Z`, `normalizedPressure`,
-`normalizedTangentialPressure`, `tiltX`, `tiltY`, `rotation`,
-`pointingDeviceType`, and `uniqueId`.
+Protocol 2 preserves the protocol 1 event names and compatibility fields while
+adding AppKit screen coordinates, normalized pressure, tilt, rotation, device
+identity, and richer proximity metadata. See
+[`../../../docs/PROTOCOL.md`](../../../docs/PROTOCOL.md) and
+[`PROTOCOL.md`](PROTOCOL.md).
 
-See `PROTOCOL.md` for the full compatibility contract and actual-device result.
+## Endpoints
 
-The server binds only to `127.0.0.1` and provides:
+- `GET /` — JSON service descriptor
+- `GET /health` — touch and pen readiness
+- `GET /api/status` — capabilities, bounds, counters, and queue metrics
+- `WS /ws` — protocol 2 native input stream
 
-- `GET /health`
-- `GET /api/status`
-- `WS /ws`
-- `/`, `/index.html`, `/app.js`, `/styles.css`
+The server binds only to `127.0.0.1`. Loopback browser origins and Origin-less
+native clients are allowed by default; other origins require
+`--allowed-origin`.
 
-Build:
+## Build and run
 
 ```sh
 ./build.sh
 ```
 
-The packaged product is written to `dist/macos/WacomNativeBridge.app`. Launching
-the app starts the loopback server and opens `http://127.0.0.1:8765` in the
-user's macOS default browser. If that fails, it prints the URL for manual access.
-While the bridge is running, a small status window shows Touch/Pen readiness,
-event and browser-client counts, and drop counters. Its Open Browser button
-opens the localhost page again in the macOS default browser. Use the Quit
-button, close button, or Command-Q to stop input callbacks and the localhost
-server cleanly.
+The product is written to `dist/macos/WacomNativeBridge.app`. Launching it shows
+a small native status window with touch/pen readiness, client and event/drop
+counters, and a Quit button. The close button and Command-Q use the same clean
+shutdown path.
 
-Diagnostic run without browser launch:
+Headless diagnostic run:
 
 ```sh
-../../../dist/macos/WacomNativeBridge.app/Contents/MacOS/WacomNativeBridge --no-browser --no-window --duration 30
+../../../dist/macos/WacomNativeBridge.app/Contents/MacOS/WacomNativeBridge \
+  --no-window --duration 30
 ```
 
-Input callbacks publish fixed-size snapshots to a 16,384-event bounded queue.
-JSON serialization and socket writes happen on worker threads. Each WebSocket
-client has an independent 1,024-message drop-oldest queue.
+Options:
 
-Automated endpoint/handshake smoke test:
+- `--port PORT`
+- `--duration SECONDS`
+- `--no-window`
+- `--allowed-origin ORIGIN` (repeatable)
+
+## Tests
+
+Automated HTTP, WebSocket, static-path, CORS, and origin-policy smoke test:
 
 ```sh
 ./smoke-test.sh
@@ -55,3 +59,10 @@ Actual-device WebSocket capture:
 ```sh
 ./run-integration-test.sh
 ```
+
+The native test tools are compiled from Swift with the installed Xcode toolchain
+and do not require Node.js.
+
+Native input uses a 16,384-event drop-oldest queue. Each WebSocket client has an
+independent 1,024-message drop-oldest queue. JSON serialization and socket writes
+run outside native callbacks.

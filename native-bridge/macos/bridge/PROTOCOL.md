@@ -12,10 +12,16 @@ AppKit 값을 가산 필드로 추가한 protocol 2를 제공한다. 기존 Wind
 
 - HTTP: `http://127.0.0.1:8765`
 - WebSocket: `ws://127.0.0.1:8765/ws`
+- service descriptor: `GET /`
 - readiness: `GET /health`
 - capabilities/counters: `GET /api/status`
 
-서버 socket은 `INADDR_LOOPBACK`에만 bind한다.
+서버 socket은 `INADDR_LOOPBACK`에만 bind한다. `GET /`는 HTML이 아니라 protocol 2
+서비스 설명 JSON을 반환하며 정적 웹 파일 경로는 `404`를 반환한다.
+
+브라우저 Origin은 `localhost`, `127.0.0.1`, `[::1]`을 기본 허용하고 Origin이 없는
+네이티브 클라이언트도 허용한다. 그 밖의 Origin은 `--allowed-origin ORIGIN`으로 정확히
+추가해야 하며, 허용되지 않은 HTTP 요청과 WebSocket upgrade는 `403`으로 거부한다.
 
 ## Common envelope
 

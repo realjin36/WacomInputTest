@@ -11,11 +11,39 @@ status payload, and ignore unknown JSON fields.
 
 - HTTP base URL: `http://127.0.0.1:8765`
 - WebSocket: `ws://127.0.0.1:8765/ws`
+- Service metadata: `GET /`
 - Readiness: `GET /health`
 - Capabilities and counters: `GET /api/status`
 
-The bind address is loopback-only. Windows selects a different endpoint with
-`--url http://127.0.0.1:PORT`; macOS selects a different port with `--port PORT`.
+The bind address is loopback-only. Both hosts select a different port with
+`--port PORT`. Windows also retains `--url http://127.0.0.1:PORT` as a legacy
+compatibility alias.
+
+`GET /` returns a service descriptor rather than HTML:
+
+```json
+{
+  "name": "Wacom Native Input Bridge",
+  "protocolVersion": 1,
+  "health": "/health",
+  "status": "/api/status",
+  "webSocket": "/ws"
+}
+```
+
+macOS reports `protocolVersion: 2`. Unknown paths return `404`; the bridge does
+not serve static web content.
+
+## Browser origins
+
+The bridge accepts browser origins whose host is `localhost`, `127.0.0.1`, or
+`[::1]`, on any port. A non-browser client may omit the `Origin` header. Other
+origins are rejected with `403` unless the bridge was started with an exact
+`--allowed-origin ORIGIN` entry.
+
+Allowed HTTP requests receive an exact `Access-Control-Allow-Origin` response.
+The bridge never uses a wildcard origin. The same allowlist is checked before a
+WebSocket upgrade. `--allowed-origin` may be repeated.
 
 ## Connection handshake
 
@@ -43,7 +71,8 @@ The first WebSocket message is always:
 
 macOS reports protocol version `2` and `native.platform = "macos"`.
 
-Browser clients may report whether they are actively consuming input:
+Clients with a visible/foreground presentation may report whether they are
+actively consuming input:
 
 ```json
 { "type": "bridge.activate", "generation": 1 }
@@ -180,7 +209,7 @@ Common fields under `status.native` include:
 - `touchDevices`
 - `producedEvents`, `droppedInputEvents`
 - `touchFrames`, `penPackets`, `proximityMessages`
-- `activeBrowserClients`
+- `activeBrowserClients` (legacy field name for active presentation clients)
 
 Windows additionally reports Wintab axis, pressure, proximity, overlap, and
 promotion fields. macOS additionally reports common screen coordinate spaces,

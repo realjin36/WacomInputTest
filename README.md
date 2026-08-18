@@ -1,45 +1,49 @@
 # Wacom Native Input Bridge
 
-Cross-platform localhost bridge for receiving native Wacom touch and pen input
-from Windows and macOS applications.
+Cross-platform localhost service for receiving native Wacom touch and pen input
+on Windows and macOS.
 
-The bridge captures native tablet events, normalizes them into a shared JSON
-envelope, and exposes them to other applications over HTTP and WebSocket. The
-bundled web monitor is an example client for development and device diagnostics;
-it is not the core product.
+The bridge captures tablet events through platform-native APIs, normalizes them
+into a shared JSON protocol, and makes them available to other applications over
+HTTP and WebSocket. The web monitor under `examples/` is an optional, separately
+run client for development and device diagnostics.
 
 This is an independent project and is not an official Wacom product.
 
-## What it provides
+## Features
 
-- Native touch capture through WacomMT on Windows and macOS
-- Native pen capture through Wintab on Windows and AppKit tablet events on macOS
-- Loopback-only HTTP server at `127.0.0.1:8765`
-- Real-time WebSocket stream at `ws://127.0.0.1:8765/ws`
-- Device capabilities, coordinate bounds, counters, and drop metrics
-- Independent bounded queues so a slow client cannot block native callbacks
-- Small status window with connection state, browser launch, and clean shutdown
-- Headless runtime options for integration into another local application
+- WacomMT touch capture on Windows and macOS
+- Wintab pen capture on Windows
+- AppKit tablet-event capture on macOS
+- Loopback-only HTTP and WebSocket service
+- Touch frames, pen pressure, tilt, buttons, eraser, and proximity events
+- Device bounds, capabilities, event counters, and queue-drop metrics
+- Bounded queues so a slow client cannot block native input callbacks
+- Small native status window with touch/pen readiness and clean shutdown
+- Headless and configurable-port operation for local integrations
 
 ```text
-Wacom driver / OS tablet events
-              │
-              ▼
-      Wacom Native Input Bridge
-        ├─ GET /health
-        ├─ GET /api/status
-        └─ WS  /ws
-              │
-              ├─ your web application
-              ├─ desktop application
-              └─ bundled example monitor
+Wacom driver / native OS APIs
+              |
+              v
+   Wacom Native Input Bridge
+     HTTP 127.0.0.1:8765
+     WS   127.0.0.1:8765/ws
+              ^
+              |
+              +-- your web application
+              +-- your desktop application
+              +-- examples/web-monitor (optional, port 8080)
 ```
+
+The supported integration boundary is the localhost protocol. The repository
+does not currently provide a stable in-process C# or Objective-C++ library API.
 
 ## Use it from another project
 
-Start the bridge, then connect a WebSocket client. The first message is always
-`bridge.hello`; later messages are `touch.frame`, `pen.packet`, or
-`pen.proximity` events.
+Start the packaged bridge and connect to its WebSocket endpoint. The first
+message is `bridge.hello`; subsequent messages are `touch.frame`, `pen.packet`,
+or `pen.proximity`.
 
 ```js
 const socket = new WebSocket("ws://127.0.0.1:8765/ws");
@@ -59,53 +63,73 @@ socket.addEventListener("message", ({ data }) => {
 });
 ```
 
-Use the capability and coordinate bounds in `bridge.hello.status.native` or
-`GET /api/status` instead of assuming a fixed tablet resolution. Windows emits
-protocol 1 and macOS emits the additive protocol 2. Clients should ignore fields
-they do not recognize. See [the protocol reference](docs/PROTOCOL.md) for the
-message contract and platform differences.
+Use `bridge.hello.status.native` or `GET /api/status` for coordinate bounds and
+capabilities instead of assuming a fixed tablet resolution. Windows emits
+protocol 1; macOS emits additive protocol 2. Clients should ignore unknown
+fields. See [the protocol reference](docs/PROTOCOL.md).
 
-## Endpoints
+## HTTP and WebSocket endpoints
 
 | Endpoint | Purpose |
 | --- | --- |
+| `GET /` | JSON service descriptor |
 | `GET /health` | Touch and pen readiness |
-| `GET /api/status` | Capabilities, coordinate bounds, counters, and queue metrics |
+| `GET /api/status` | Capabilities, bounds, counters, and queue metrics |
 | `WS /ws` | Native input event stream |
-| `GET /` | Bundled example web monitor |
 
-The server accepts only `http://127.0.0.1` or `http://localhost` URLs and binds
-to loopback. It is not intended to expose tablet input to a network.
+The bridge does not serve HTML, JavaScript, CSS, or arbitrary files. Unknown
+paths, including `/index.html`, return `404`.
 
 ## Run packaged applications
 
 - Windows: `dist/windows/WacomNativeBridge.exe`
 - macOS: `dist/macos/WacomNativeBridge.app`
 
-Launching the packaged bridge opens the example monitor in the system default
-browser. For another web client, launch with a custom loopback URL/port or host
-your client separately and connect it to `/ws`.
+Starting the bridge opens only its native status window. It does not open a
+browser. Use the Quit button, the window close control, or the normal platform
+quit shortcut to stop the native callbacks and local server cleanly.
 
-Common runtime options:
+Common options:
 
-- `--web-root PATH`
-- `--duration SECONDS`
-- `--no-browser`
-- `--no-window`
+- `--port PORT` — loopback port; default `8765`
+- `--duration SECONDS` — optional diagnostic lifetime
+- `--no-window` — run headlessly
+- `--allowed-origin ORIGIN` — allow an additional HTTP/HTTPS browser origin
 
-Windows selects the endpoint with `--url http://127.0.0.1:PORT`; macOS selects
-the port with `--port PORT`.
+Windows temporarily retains `--url http://127.0.0.1:PORT` as a compatibility
+alias. New integrations should use `--port`.
+
+## Browser-origin security
+
+Tablet data is local but sensitive. The bridge therefore:
+
+- allows browser origins on `localhost`, `127.0.0.1`, and `[::1]` on any port;
+- allows non-browser clients that omit the `Origin` header;
+- rejects other origins unless explicitly listed with `--allowed-origin`;
+- returns an exact `Access-Control-Allow-Origin` value only to allowed origins;
+- never uses a wildcard CORS origin.
+
+Do not expose the bridge through a public network proxy without adding an
+appropriate authentication and authorization layer.
 
 ## Build and test
 
-Windows requires the .NET 10 SDK and Node.js:
+### Windows
+
+Requirements: Windows x64 and the .NET 10 SDK. Node.js is not required to build
+or test the bridge.
 
 ```powershell
 .\native-bridge\test-windows.ps1
 .\native-bridge\build-windows.ps1
 ```
 
-macOS requires Xcode command-line tools and the Wacom Multi-Touch SDK framework:
+The build creates a self-contained x64 executable and checksum under
+`dist\windows`.
+
+### macOS
+
+Requirements: Xcode command-line tools and the Wacom Multi-Touch SDK framework.
 
 ```sh
 cd native-bridge/macos/bridge
@@ -113,40 +137,49 @@ cd native-bridge/macos/bridge
 ./smoke-test.sh
 ```
 
-The Wacom driver supplies the runtime native libraries. Windows builds do not
-bundle `WacomMT.dll` or `Wintab32.dll`; macOS builds weak-link the installed
-`WacomMultiTouch.framework`.
+The build creates `dist/macos/WacomNativeBridge.app`. The bridge weak-links the
+installed Wacom framework and does not bundle the SDK framework.
+
+### Optional example monitor
+
+The monitor has its own Node.js server and tests; neither is part of a bridge
+build.
+
+```sh
+node examples/web-monitor/server.mjs
+node examples/web-monitor/test.mjs
+```
+
+Open `http://127.0.0.1:8080`. To target a different bridge port:
+
+```text
+http://127.0.0.1:8080/?bridge=http://127.0.0.1:9876
+```
 
 ## Repository layout
 
 ```text
-docs/PROTOCOL.md                  integration contract
-examples/web-monitor/            optional browser-based example client
+docs/PROTOCOL.md                  public integration protocol
+docs/SEPARATION_CONTRACT.md       bridge/example product boundary
+examples/web-monitor/            independently run example client
 native-bridge/bridge/             Windows bridge host (.NET/WinForms)
-native-bridge/bridge-tests/       Windows contract regression tests
+native-bridge/bridge-tests/       Windows native contract tests
 native-bridge/macos/bridge/       macOS bridge host (Objective-C++)
 native-bridge/macos/diagnostics/  actual-device diagnostic records and tools
 native-bridge/vendor/             Wacom Windows wrapper source and license
 ```
 
 `MACOS_HANDOFF.md` and `native-bridge/WINDOWS_BASELINE.md` are historical
-implementation records. They are not the primary integration documentation.
+implementation records and may describe earlier bundled-monitor builds.
 
-## Example web monitor
+## Runtime dependencies and licensing
 
-The files in `examples/web-monitor` are embedded into packaged builds and served
-at `/`. They demonstrate coordinate mapping, pressure, tilt, proximity,
-multi-touch, sequence-gap tracking, and platform fallback handling. Replace them
-at runtime with `--web-root PATH`, or ignore them and consume the WebSocket from
-your own application.
-
-## License
+The installed Wacom driver supplies the runtime native components. Windows
+packages do not bundle `WacomMT.dll` or `Wintab32.dll`; macOS packages do not
+bundle `WacomMultiTouch.framework`.
 
 Original bridge code and documentation are available under the
-[MIT License](LICENSE).
-
-Wacom wrapper, SDK-derived, sample, header, and vendor files remain subject to
-their applicable Wacom license terms. See
+[MIT License](LICENSE). Wacom wrapper, SDK-derived, sample, header, and vendor
+files remain subject to their applicable Wacom terms. See
 [`native-bridge/vendor/wacom/WACOM-SDK-LICENSE.md`](native-bridge/vendor/wacom/WACOM-SDK-LICENSE.md)
-and the source notices under `native-bridge/macos/vendor/wacom` before
-redistributing those files.
+and the notices under `native-bridge/macos/vendor/wacom` before redistribution.
