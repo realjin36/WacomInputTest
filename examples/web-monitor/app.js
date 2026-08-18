@@ -189,14 +189,27 @@ function inputColor(input) {
     : colors[input.type];
 }
 
+function mouseAction(eventType, down) {
+  if (eventType === "pointerenter") return "Mouse Enter";
+  if (eventType === "pointerdown") return "Mouse Down";
+  if (eventType === "pointerup") return "Mouse Up";
+  if (eventType === "pointerleave") return "Mouse Leave";
+  if (eventType === "pointercancel") return "Mouse Cancel";
+  return down ? "Mouse Move" : "Mouse Hover";
+}
+
 function handleMousePointer(event) {
   if (event.pointerType !== "mouse") return;
 
   const key = `mouse:${event.pointerId}`;
   if (event.type === "pointerleave" || event.type === "pointercancel") {
+    const previous = inputs.get(key);
     inputs.delete(key);
     eventCount += 1;
-    recordEvent(event.type, `mouse ${event.pointerId}`);
+    recordEvent(
+      mouseAction(event.type, false),
+      `x ${fmt(previous?.x)} · y ${fmt(previous?.y)}`
+    );
     emptyState.classList.toggle("hidden", inputs.size > 0 || eventCount > 0);
     canvasDirty = true;
     panelDirty = true;
@@ -222,9 +235,12 @@ function handleMousePointer(event) {
   addTrail(input);
   inputs.set(key, input);
   eventCount += 1;
-  if (event.type !== "pointermove" || eventCount % 8 === 0 || down !== previous?.down) {
-    recordEvent(event.type, `mouse ${event.pointerId} · btn ${event.buttons}`);
-  }
+  const action = mouseAction(event.type, down);
+  recordEvent(
+    action,
+    `x ${fmt(input.x)} · y ${fmt(input.y)} · ${buttonLabel(input)}`,
+    isCoalescibleAction(action)
+  );
   emptyState.classList.add("hidden");
   canvasDirty = true;
   panelDirty = true;
@@ -241,12 +257,66 @@ function isUpState(state) {
     || state === "WMTFingerStateUp" || state === "WMTFingerStateNone";
 }
 
+function touchAction(previous, input, state) {
+  if (isUpState(state)) return previous?.down ? "Touch Up" : null;
+  if (input.down && !previous?.down) return "Touch Down";
+  if (input.down) return "Touch Move";
+  return null;
+}
+
+function penAction(previous, input) {
+  if (input.tipDown && !previous?.tipDown) return "Pen Down";
+  if (!input.tipDown && previous?.tipDown) return "Pen Up";
+  return input.tipDown ? "Pen Move" : "Pen Hover";
+}
+
+function penSideButtonChanges(previousButtons = 0, currentButtons = 0) {
+  const changed = (previousButtons ^ currentButtons) & ~1;
+  const changes = [];
+  for (let button = 1; button < 31; button += 1) {
+    const mask = 2 ** button;
+    if ((changed & mask) !== 0) {
+      changes.push({ button, down: (currentButtons & mask) !== 0 });
+    }
+  }
+  return changes;
+}
+
+function stablePenTipDown(
+  previous,
+  rawTipDown,
+  hasExplicitTipDown,
+  currentButtons,
+  sideButtonsChanged,
+  absoluteZ
+) {
+  if (!hasExplicitTipDown || !previous || rawTipDown === previous.tipDown) {
+    return rawTipDown;
+  }
+  const sideButtonDown = (currentButtons & ~1) !== 0;
+  const remainsAtSurface = Number.isFinite(absoluteZ) && absoluteZ <= 0;
+  if (previous.tipDown && !rawTipDown
+      && (sideButtonDown || sideButtonsChanged || remainsAtSurface)) {
+    return previous.tipDown;
+  }
+  return rawTipDown;
+}
+
+function isCoalescibleAction(action) {
+  return action === "Touch Move" || action === "Pen Move" || action === "Pen Hover"
+    || action === "Mouse Move" || action === "Mouse Hover";
+}
+
 function handleTouchFrame(message) {
   const seen = new Set();
   for (const contact of message.touch.contacts) {
     const key = `touch:${message.deviceId}:${contact.id}`;
     const state = contact.commonState || contact.state;
     if (state === "none" || state === "WMTFingerStateNone") {
+      const previous = inputs.get(key);
+      if (previous?.down) {
+        recordEvent("Touch Up", `x ${fmt(previous.x)} · y ${fmt(previous.y)}`);
+      }
       inputs.delete(key);
       continue;
     }
@@ -268,11 +338,18 @@ function handleTouchFrame(message) {
     inputs.set(key, input);
     seen.add(key);
     scheduleRemoval(key, input, isUpState(state) ? TOUCH_UP_HOLD_MS : TOUCH_STALE_MS);
+    const action = touchAction(previous, input, state);
+    if (action) {
+      recordEvent(
+        action,
+        `x ${fmt(input.x)} · y ${fmt(input.y)}`,
+        isCoalescibleAction(action)
+      );
+    }
   }
 
   const activeTouches = [...inputs.values()].filter(input => input.type === "touch" && input.down).length;
   maxTouchCount = Math.max(maxTouchCount, activeTouches);
-  recordEvent("touch.frame", `${message.touch.contacts.length} contacts · frame ${message.touch.frameNumber}`);
 }
 
 function handlePenPacket(message) {
@@ -285,9 +362,19 @@ function handlePenPacket(message) {
   const pressure = Number.isFinite(packet.normalizedPressure)
     ? clamp01(packet.normalizedPressure)
     : clamp01(packet.pressure / maxPressure);
-  const tipDown = typeof packet.tipDown === "boolean"
+  const hasExplicitTipDown = typeof packet.tipDown === "boolean";
+  const rawTipDown = hasExplicitTipDown
     ? packet.tipDown
     : pressure > 0 || (packet.buttons & 1) !== 0;
+  const sideButtonChanges = penSideButtonChanges(previous?.buttons, packet.buttons);
+  const tipDown = stablePenTipDown(
+    previous,
+    rawTipDown,
+    hasExplicitTipDown,
+    packet.buttons,
+    sideButtonChanges.length > 0,
+    packet.absoluteZ
+  );
   const deviceType = packet.pointingDeviceType || ((packet.status & 0x10) !== 0 ? "eraser" : "pen");
   const hasCommonTilt = Number.isFinite(packet.tiltX) && Number.isFinite(packet.tiltY);
   const altitude = packet.altitude / 10;
@@ -321,8 +408,21 @@ function handlePenPacket(message) {
   addTrail(input);
   inputs.set(key, input);
   scheduleRemoval(key, input, PEN_STALE_MS);
-  if (eventCount % 8 === 0 || input.down !== previous?.down) {
-    recordEvent("pen.packet", `${deviceType} · p ${pressure.toFixed(3)} · btn ${packet.buttons}`);
+  for (const change of sideButtonChanges) {
+    const deviceDetail = deviceType === "pen" ? "" : `${deviceType} · `;
+    recordEvent(
+      change.down ? "Pen Button Down" : "Pen Button Up",
+      `button ${change.button} · ${deviceDetail}x ${fmt(input.x)} · y ${fmt(input.y)}`
+    );
+  }
+  const action = penAction(previous, input);
+  if (sideButtonChanges.length === 0 || action === "Pen Down" || action === "Pen Up") {
+    const deviceDetail = deviceType === "pen" ? "" : `${deviceType} · `;
+    recordEvent(
+      action,
+      `${deviceDetail}x ${fmt(input.x)} · y ${fmt(input.y)} · ${buttonLabel(input)}`,
+      isCoalescibleAction(action)
+    );
   }
 }
 
@@ -331,7 +431,8 @@ function handleProximity(message) {
   const entering = typeof proximity.entering === "boolean"
     ? proximity.entering
     : proximity.hardware || proximity.context;
-  recordEvent("pen.proximity", `${proximity.pointingDeviceType || "pen"} · ${entering ? "enter" : "exit"}`);
+  const deviceType = proximity.pointingDeviceType || "pen";
+  recordEvent(entering ? "Pen Enter" : "Pen Leave", deviceType === "pen" ? "" : deviceType);
   if (!entering) {
     for (const [key, input] of inputs) if (input.type === "pen") inputs.delete(key);
   }
@@ -348,8 +449,17 @@ function scheduleRemoval(key, expected, delay) {
   }, delay);
 }
 
-function recordEvent(type, detail) {
-  recentEvents.unshift({ type, detail, time: timeFormatter.format(new Date()) });
+function recordEvent(type, detail, coalesce = false) {
+  const time = timeFormatter.format(new Date());
+  const latest = recentEvents[0];
+  if (coalesce && latest?.coalesce && latest.type === type) {
+    latest.detail = detail;
+    latest.time = time;
+    latest.count += 1;
+    eventLogDirty = true;
+    return;
+  }
+  recentEvents.unshift({ type, detail, time, count: 1, coalesce });
   recentEvents.splice(12);
   eventLogDirty = true;
 }
@@ -359,7 +469,7 @@ function handleMessage(message) {
     bridgeStatus = message.status;
     bridgeState = "연결됨";
     reconnectDelay = 250;
-    recordEvent("bridge.hello", `protocol ${message.protocolVersion}`);
+    recordEvent("Bridge Connected", `protocol ${message.protocolVersion}`);
   } else {
     eventCount += 1;
     if (lastSequence && message.sequence > lastSequence + 1) sequenceGaps += message.sequence - lastSequence - 1;
@@ -383,7 +493,7 @@ function connectBridge() {
   socket.addEventListener("open", () => reportClientActivity(true));
   socket.addEventListener("message", event => {
     try { handleMessage(JSON.parse(event.data)); }
-    catch (error) { recordEvent("parse.error", error.message); }
+    catch (error) { recordEvent("Data Error", error.message); }
   });
   socket.addEventListener("close", () => {
     bridgeState = "연결 끊김 · 재시도 중";
@@ -425,8 +535,16 @@ async function refreshBridgeStatus() {
 
 function buttonLabel(input) {
   if (!input.buttons) return "없음";
+  if (input.type === "pen") {
+    const labels = [];
+    if (input.buttons & 1) labels.push("펜촉");
+    for (let button = 1; button < 31; button += 1) {
+      if ((input.buttons & (2 ** button)) !== 0) labels.push(`버튼${button}`);
+    }
+    return labels.join("+") || `비트 ${input.buttons}`;
+  }
   const labels = [];
-  if (input.buttons & 1) labels.push(input.type === "pen" ? "펜촉/버튼1" : input.type === "mouse" ? "왼쪽" : "접촉");
+  if (input.buttons & 1) labels.push(input.type === "mouse" ? "왼쪽" : "접촉");
   if (input.buttons & 2) labels.push(input.type === "mouse" ? "오른쪽" : "버튼2");
   if (input.buttons & 4) labels.push(input.type === "mouse" ? "가운데" : "버튼3");
   if (input.buttons & 8) labels.push("뒤로");
@@ -492,7 +610,11 @@ function updatePanels(forceLog = false) {
   }).join("") : '<p class="no-pointers">감지된 입력이 없습니다.</p>';
 
   if (eventLogDirty || forceLog) {
-    eventLog.innerHTML = recentEvents.map(item => `<li><b>${escapeHtml(item.type)}</b><span>${escapeHtml(item.detail)} · ${item.time}</span></li>`).join("");
+    eventLog.innerHTML = recentEvents.map(item => {
+      const count = item.count > 1 ? ` ×${item.count}` : "";
+      const detail = item.detail ? `${escapeHtml(item.detail)} · ` : "";
+      return `<li><b>${escapeHtml(item.type)}${count}</b><span>${detail}${item.time}</span></li>`;
+    }).join("");
     eventLogDirty = false;
   }
 }

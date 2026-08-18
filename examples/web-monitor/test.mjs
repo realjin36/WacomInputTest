@@ -121,8 +121,15 @@ const exportSource = `\n;globalThis.__appTest = {
   handleMessage,
   updatePanels,
   inputColor,
+  mouseAction,
+  touchAction,
+  penAction,
+  penSideButtonChanges,
+  stablePenTipDown,
+  recordEvent,
   resolveBridgeEndpoints,
   getInputs: () => [...inputs.values()],
+  getRecentEvents: () => [...recentEvents],
   getSequenceGaps: () => sequenceGaps
 };`;
 vm.runInNewContext(appSource + exportSource, sandbox, { filename: "app.js" });
@@ -165,6 +172,66 @@ assert.equal(
   "wss://bridge.example.test/ws"
 );
 assert.equal(test.resolveBridgeEndpoints("?bridge=file%3A%2F%2Ftmp").http, "http://127.0.0.1:8765");
+assert.equal(test.mouseAction("pointerenter", false), "Mouse Enter");
+assert.equal(test.mouseAction("pointermove", false), "Mouse Hover");
+assert.equal(test.mouseAction("pointerdown", true), "Mouse Down");
+assert.equal(test.mouseAction("pointermove", true), "Mouse Move");
+assert.equal(test.mouseAction("pointerup", false), "Mouse Up");
+assert.equal(test.mouseAction("pointerleave", false), "Mouse Leave");
+assert.equal(test.mouseAction("pointercancel", false), "Mouse Cancel");
+assert.equal(test.touchAction(undefined, { down: true }, "down"), "Touch Down");
+assert.equal(test.touchAction({ down: true }, { down: true }, "hold"), "Touch Move");
+assert.equal(test.touchAction({ down: true }, { down: false }, "up"), "Touch Up");
+assert.equal(test.penAction(undefined, { tipDown: false }), "Pen Hover");
+assert.equal(test.penAction({ tipDown: false }, { tipDown: true }), "Pen Down");
+assert.equal(test.penAction({ tipDown: true }, { tipDown: true }), "Pen Move");
+assert.equal(test.penAction({ tipDown: true }, { tipDown: false }), "Pen Up");
+const normalizedButtonChanges = (previous, current) =>
+  JSON.parse(JSON.stringify(test.penSideButtonChanges(previous, current)));
+assert.deepEqual(
+  normalizedButtonChanges(0x1, 0x2),
+  [{ button: 1, down: true }]
+);
+assert.deepEqual(
+  normalizedButtonChanges(0x2, 0x1),
+  [{ button: 1, down: false }]
+);
+assert.deepEqual(
+  normalizedButtonChanges(0, 0x6),
+  [{ button: 1, down: true }, { button: 2, down: true }]
+);
+assert.equal(
+  test.stablePenTipDown({ tipDown: true }, false, true, 0x4, true),
+  true
+);
+assert.equal(
+  test.stablePenTipDown({ tipDown: true }, false, true, 0x4, false),
+  true
+);
+assert.equal(
+  test.stablePenTipDown({ tipDown: true }, false, true, 0, true),
+  true
+);
+assert.equal(
+  test.stablePenTipDown({ tipDown: true }, false, true, 0, false, 0),
+  true
+);
+assert.equal(
+  test.stablePenTipDown({ tipDown: true }, false, true, 0, false, 84),
+  false
+);
+assert.equal(
+  test.stablePenTipDown({ tipDown: false }, false, true, 0x4, true),
+  false
+);
+assert.equal(
+  test.stablePenTipDown({ tipDown: true }, false, true, 0, false, 84),
+  false
+);
+assert.equal(
+  test.stablePenTipDown({ tipDown: true }, true, false, 0x4, true),
+  true
+);
 
 test.handleMessage({ type: "bridge.hello", protocolVersion: 1, status });
 test.handleMessage({
@@ -222,6 +289,9 @@ assert.ok(Math.abs(pen.pressure - 1024 / 2047) < 1e-9);
 assert.equal(pen.altitude, 60);
 assert.equal(pen.azimuth, 90);
 assert.equal(pen.rotation, 12);
+assert.ok(test.getRecentEvents().some(event => event.type === "Bridge Connected"));
+assert.ok(test.getRecentEvents().some(event => event.type === "Touch Down"));
+assert.ok(test.getRecentEvents().some(event => event.type === "Pen Down"));
 
 test.updatePanels(true);
 assert.match(elements.get("supportStatus").innerHTML, /Windows/);
@@ -237,6 +307,7 @@ test.handleMessage({
 });
 assert.equal(test.getSequenceGaps(), 2);
 assert.equal(test.getInputs().filter(input => input.type === "pen").length, 0);
+assert.ok(test.getRecentEvents().some(event => event.type === "Pen Leave"));
 
 test.handleMessage({
   type: "bridge.hello",
@@ -295,5 +366,24 @@ assert.equal(macPen.inverted, true);
 test.updatePanels(true);
 assert.match(elements.get("supportStatus").innerHTML, /macOS/);
 assert.match(elements.get("pointerList").innerHTML, /Tilt X \/ Y/);
+assert.ok(test.getRecentEvents().some(event => event.type === "Pen Hover"));
+assert.doesNotMatch(elements.get("eventLog").innerHTML, /touch\.frame|pen\.packet|pen\.proximity/);
+
+test.recordEvent("Pen Down", "separator");
+test.recordEvent("Pen Hover", "first", true);
+test.recordEvent("Pen Hover", "second", true);
+test.recordEvent("Pen Hover", "last", true);
+let events = test.getRecentEvents();
+assert.equal(events[0].type, "Pen Hover");
+assert.equal(events[0].count, 3);
+assert.equal(events[0].detail, "last");
+assert.equal(events[1].type, "Pen Down");
+test.recordEvent("Touch Move", "touch", true);
+test.recordEvent("Pen Hover", "new group", true);
+events = test.getRecentEvents();
+assert.equal(events[0].type, "Pen Hover");
+assert.equal(events[0].count, 1);
+test.updatePanels(true);
+assert.match(elements.get("eventLog").innerHTML, /Pen Hover ×3/);
 
 console.log("example-monitor-tests=ok protocols=1,2 platforms=windows,macos configurable-bridge=ok");
