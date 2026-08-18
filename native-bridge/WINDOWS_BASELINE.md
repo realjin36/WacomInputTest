@@ -90,3 +90,21 @@ fallback한다.
 빌드 출력의 경고는 `vendor/wacom/WacomMTDN`과 `vendor/wacom/WintabDN`의 기존 nullable
 annotation 및 analyzer 경고다. 이번 수명주기 분리 코드에서는 컴파일 경고나 오류가
 보고되지 않았다. 공식 vendor 사본은 이 단계에서 수정하지 않는다.
+
+## 6단계 Windows 배포 빌드 검증 결과
+
+검증일: 2026-08-18
+
+검증 환경: Windows x64 + Wacom Cintiq, .NET SDK 10.0.400
+
+- `native-bridge/build-windows.ps1` Release 빌드 성공
+- self-contained, compressed single-file `dist/windows/WacomInputTest.exe` 생성 성공
+- 산출물 크기: 60.74 MiB
+- SHA-256: `de21bc135fbbd4ceeb4988e1006a98a41b8b15a47dda72a989cad0fff3436c0e`
+- PE machine x64(`0x8664`) 및 Windows GUI subsystem(`2`) 검증 통과
+- 상태 창과 Windows 기본 브라우저 실행 확인
+- Touch/Pen 연결 상태 및 웹 시각화 정상 확인
+- 브라우저 탭을 연 상태에서도 종료 버튼으로 즉시 정상 종료 확인
+
+빌드의 49개 경고는 모두 기존 Wacom vendor wrapper의 nullable annotation 및 analyzer
+경고다. 프로젝트 자체에서 발생했던 중복 DPI manifest 경고는 제거했다.
