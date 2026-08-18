@@ -100,7 +100,9 @@ const sandbox = {
   console,
   document,
   window: windowObject,
-  location: { protocol: "http:", host: "127.0.0.1:8765" },
+  location: { protocol: "http:", host: "127.0.0.1:8080", search: "" },
+  URL,
+  URLSearchParams,
   WebSocket: MockWebSocket,
   ResizeObserver: class { observe() {} },
   requestAnimationFrame() { return 1; },
@@ -120,6 +122,7 @@ const exportSource = `\n;globalThis.__appTest = {
   handleMessage,
   updatePanels,
   inputColor,
+  resolveBridgeEndpoints,
   getInputs: () => [...inputs.values()],
   getSequenceGaps: () => sequenceGaps
 };`;
@@ -152,6 +155,18 @@ const status = {
 };
 
 const test = sandbox.__appTest;
+assert.equal(test.resolveBridgeEndpoints("").http, "http://127.0.0.1:8765");
+assert.equal(test.resolveBridgeEndpoints("").webSocket, "ws://127.0.0.1:8765/ws");
+assert.equal(
+  test.resolveBridgeEndpoints("?bridge=http%3A%2F%2F127.0.0.1%3A9876").webSocket,
+  "ws://127.0.0.1:9876/ws"
+);
+assert.equal(
+  test.resolveBridgeEndpoints("?bridge=https%3A%2F%2Fbridge.example.test").webSocket,
+  "wss://bridge.example.test/ws"
+);
+assert.equal(test.resolveBridgeEndpoints("?bridge=file%3A%2F%2Ftmp").http, "http://127.0.0.1:8765");
+
 test.handleMessage({ type: "bridge.hello", protocolVersion: 1, status });
 test.handleMessage({
   sequence: 1,

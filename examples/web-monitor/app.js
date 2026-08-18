@@ -23,6 +23,32 @@ const TOUCH_UP_HOLD_MS = 250;
 const TOUCH_STALE_MS = 500;
 const PEN_STALE_MS = 180;
 const RECONNECT_MAX_MS = 3000;
+const DEFAULT_BRIDGE_HTTP_URL = "http://127.0.0.1:8765";
+
+function resolveBridgeEndpoints(search = globalThis.location?.search || "") {
+  const configured = new URLSearchParams(search).get("bridge") || DEFAULT_BRIDGE_HTTP_URL;
+  let httpUrl;
+  try {
+    httpUrl = new URL(configured);
+  } catch (_) {
+    httpUrl = new URL(DEFAULT_BRIDGE_HTTP_URL);
+  }
+  if (httpUrl.protocol !== "http:" && httpUrl.protocol !== "https:") {
+    httpUrl = new URL(DEFAULT_BRIDGE_HTTP_URL);
+  }
+  httpUrl.pathname = "/";
+  httpUrl.search = "";
+  httpUrl.hash = "";
+
+  const webSocketUrl = new URL("ws", httpUrl);
+  webSocketUrl.protocol = httpUrl.protocol === "https:" ? "wss:" : "ws:";
+  return {
+    http: httpUrl.href.replace(/\/$/, ""),
+    webSocket: webSocketUrl.href
+  };
+}
+
+const bridgeEndpoints = resolveBridgeEndpoints();
 
 let socket = null;
 let reconnectTimer = 0;
@@ -352,9 +378,7 @@ function connectBridge() {
   bridgeState = "연결 중";
   panelDirty = true;
   requestRender();
-  const scheme = location.protocol === "https:" ? "wss" : "ws";
-  const host = location.host || "127.0.0.1:8765";
-  socket = new WebSocket(`${scheme}://${host}/ws`);
+  socket = new WebSocket(bridgeEndpoints.webSocket);
   socket.addEventListener("open", () => reportClientActivity(true));
   socket.addEventListener("message", event => {
     try { handleMessage(JSON.parse(event.data)); }
@@ -388,7 +412,7 @@ function reportClientActivity(force = false) {
 async function refreshBridgeStatus() {
   if (!socket || socket.readyState !== WebSocket.OPEN) return;
   try {
-    const response = await fetch("/api/status", { cache: "no-store" });
+    const response = await fetch(`${bridgeEndpoints.http}/api/status`, { cache: "no-store" });
     if (!response.ok) return;
     bridgeStatus = await response.json();
     panelDirty = true;
