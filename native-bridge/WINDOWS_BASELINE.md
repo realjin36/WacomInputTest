@@ -126,3 +126,21 @@ annotation 및 analyzer 경고다. 이번 수명주기 분리 코드에서는 �
 
 `native-bridge/test-windows.ps1`에서 전체 회귀 테스트를 독립 실행할 수 있으며,
 `native-bridge/build-windows.ps1`도 publish 전에 같은 테스트를 자동 실행한다.
+
+## 8단계 Windows + Cintiq 최종 검증 결과
+
+검증일: 2026-08-18
+
+검증 환경: Windows x64 + Wacom Cintiq
+
+- 최종 `dist/windows/WacomInputTest.exe` 상태 창 단일 실행 확인
+- Windows 기본 브라우저 자동 실행 확인
+- Touch/Pen 초록색 연결 상태 확인
+- 단일 및 다중 터치의 좌표, 접점 수, 해제 처리 확인
+- 펜 호버, 압력, 좌우·상하 기울기, 버튼, 지우개, proximity 해제 확인
+- 실사용 범위인 터치 2개와 펜의 동시 입력 확인
+- 빠른 연속 탭은 개별 native frame으로 처리되며, UI에서는 재사용된 Finger ID의 마커를
+  250ms 동안 이어서 표시하는 동작 확인
+
+최종 검증 범위를 벗어난 다수 접점과 펜의 스트레스 동시 입력은 Windows 릴리스 승인
+조건에 포함하지 않는다.
