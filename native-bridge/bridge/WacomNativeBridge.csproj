@@ -40,9 +40,4 @@
     <Compile Include="..\vendor\wacom\WacomMTDN\*.cs" Link="vendor\WacomMTDN\%(Filename)%(Extension)" />
     <Compile Include="..\vendor\wacom\WintabDN\*.cs" Link="vendor\WintabDN\%(Filename)%(Extension)" />
   </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="..\..\examples\web-monitor\index.html" Link="Web\index.html" LogicalName="WacomNativeBridge.Web.index.html" />
-    <EmbeddedResource Include="..\..\examples\web-monitor\app.js" Link="Web\app.js" LogicalName="WacomNativeBridge.Web.app.js" />
-    <EmbeddedResource Include="..\..\examples\web-monitor\styles.css" Link="Web\styles.css" LogicalName="WacomNativeBridge.Web.styles.css" />
-  </ItemGroup>
 </Project>
