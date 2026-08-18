@@ -1,5 +1,4 @@
 using System.Net.WebSockets;
-using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Channels;
@@ -12,10 +11,11 @@ internal static class Program
     private static readonly List<(string Name, Func<Task> Run)> Tests =
     [
         ("BridgeOptions defaults", TestBridgeOptionsDefaults),
-        ("BridgeOptions flags and URL normalization", TestBridgeOptionsFlags),
+        ("BridgeOptions flags, origins, and URL normalization", TestBridgeOptionsFlags),
         ("BridgeOptions rejects unsafe or incomplete arguments", TestBridgeOptionsRejectsInvalidArguments),
+        ("Origin policy allows only trusted browser origins", TestOriginPolicy),
         ("Protocol JSON uses web-compatible camelCase fields", TestProtocolSerialization),
-        ("Product assembly contains all embedded web assets", TestEmbeddedWebAssets),
+        ("Product assembly contains no embedded web assets", TestNoEmbeddedWebAssets),
         ("WebSocket hub sends hello and input events", TestWebSocketHubBroadcast),
         ("WebSocket hub counts slow-client drops", TestWebSocketHubDropAccounting)
     ];
@@ -45,30 +45,29 @@ internal static class Program
     {
         var options = BridgeOptions.Parse([]);
         Equal("http://127.0.0.1:8765", options.Url);
-        Equal(null, options.WebRoot);
         Equal(null, options.Duration);
-        True(options.OpenBrowser);
         True(options.ShowWindow);
+        Equal(0, options.AllowedOrigins.Length);
         return Task.CompletedTask;
     }
 
     private static Task TestBridgeOptionsFlags()
     {
-        var relativeWebRoot = Path.Combine("fixtures", "web");
         var options = BridgeOptions.Parse(
         [
             "--url", "http://localhost:9876/",
-            "--web-root", relativeWebRoot,
             "--duration", "1.5",
-            "--no-browser",
-            "--no-window"
+            "--no-window",
+            "--allowed-origin", "https://Example.com:443/",
+            "--allowed-origin", "http://tools.example:8080"
         ]);
 
         Equal("http://localhost:9876", options.Url);
-        Equal(Path.GetFullPath(relativeWebRoot), options.WebRoot);
         Equal(TimeSpan.FromSeconds(1.5), options.Duration);
-        False(options.OpenBrowser);
         False(options.ShowWindow);
+        Equal(2, options.AllowedOrigins.Length);
+        Equal("https://example.com", options.AllowedOrigins[0]);
+        Equal("http://tools.example:8080", options.AllowedOrigins[1]);
         return Task.CompletedTask;
     }
 
@@ -80,6 +79,27 @@ internal static class Program
         Throws<ArgumentException>(() => BridgeOptions.Parse(["--url", "https://127.0.0.1:8765"]));
         Throws<ArgumentException>(() => BridgeOptions.Parse(["--url", "http://0.0.0.0:8765"]));
         Throws<ArgumentException>(() => BridgeOptions.Parse(["--url", "http://example.com:8765"]));
+        Throws<ArgumentException>(() => BridgeOptions.Parse(["--web-root", "."]));
+        Throws<ArgumentException>(() => BridgeOptions.Parse(["--no-browser"]));
+        Throws<ArgumentException>(() => BridgeOptions.Parse(["--allowed-origin"]));
+        Throws<ArgumentException>(() => BridgeOptions.Parse(["--allowed-origin", "*"]));
+        Throws<ArgumentException>(() => BridgeOptions.Parse(["--allowed-origin", "https://example.com/path"]));
+        return Task.CompletedTask;
+    }
+
+    private static Task TestOriginPolicy()
+    {
+        var policy = new OriginPolicy(["https://allowed.example", "http://tools.example:8080"]);
+        True(policy.IsAllowed(null));
+        True(policy.IsAllowed(""));
+        True(policy.IsAllowed("http://localhost:8080"));
+        True(policy.IsAllowed("http://127.0.0.1:9876"));
+        True(policy.IsAllowed("http://[::1]:8080"));
+        True(policy.IsAllowed("https://allowed.example"));
+        True(policy.IsAllowed("http://tools.example:8080"));
+        False(policy.IsAllowed("https://blocked.example"));
+        False(policy.IsAllowed("null"));
+        False(policy.IsAllowed("https://allowed.example/path"));
         return Task.CompletedTask;
     }
 
@@ -104,12 +124,10 @@ internal static class Program
         return Task.CompletedTask;
     }
 
-    private static Task TestEmbeddedWebAssets()
+    private static Task TestNoEmbeddedWebAssets()
     {
-        var resources = typeof(BridgeOptions).Assembly.GetManifestResourceNames().ToHashSet(StringComparer.Ordinal);
-        True(resources.Contains("WacomNativeBridge.Web.index.html"));
-        True(resources.Contains("WacomNativeBridge.Web.app.js"));
-        True(resources.Contains("WacomNativeBridge.Web.styles.css"));
+        var resources = typeof(BridgeOptions).Assembly.GetManifestResourceNames();
+        False(resources.Any(resource => resource.StartsWith("WacomNativeBridge.Web.", StringComparison.Ordinal)));
         return Task.CompletedTask;
     }
 

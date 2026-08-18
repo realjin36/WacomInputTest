@@ -6,8 +6,7 @@ import { performance } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.resolve(scriptDirectory, "..", "..");
-const appSource = fs.readFileSync(path.join(projectRoot, "examples", "web-monitor", "app.js"), "utf8");
+const appSource = fs.readFileSync(path.join(scriptDirectory, "app.js"), "utf8");
 
 class MockClassList {
   values = new Set();
@@ -239,4 +238,62 @@ test.handleMessage({
 assert.equal(test.getSequenceGaps(), 2);
 assert.equal(test.getInputs().filter(input => input.type === "pen").length, 0);
 
-console.log("windows-web-compat=ok protocol=1 touch=legacy-state pen=wintab-fallback platform=windows");
+test.handleMessage({
+  type: "bridge.hello",
+  protocolVersion: 2,
+  status: {
+    protocolVersion: 2,
+    url: "http://127.0.0.1:8765",
+    native: {
+      platform: "macos",
+      touchReady: true,
+      penReady: true,
+      touchCoordinateSpace: "core-graphics-global-logical",
+      penCoordinateSpace: "core-graphics-global-logical",
+      touchDevices: [{ deviceId: 3, logicalOriginX: 0, logicalOriginY: 0, logicalWidth: 1920, logicalHeight: 1080 }]
+    }
+  }
+});
+test.handleMessage({
+  sequence: 6,
+  type: "pen.packet",
+  deviceId: 3,
+  pen: {
+    cursor: 2,
+    x: 120,
+    y: 240,
+    z: 0,
+    absoluteX: 120,
+    absoluteY: 240,
+    absoluteZ: 0,
+    screenX: 120,
+    screenY: 240,
+    hasScreenLocation: true,
+    pressure: 32768,
+    normalizedPressure: 0.5,
+    normalizedTangentialPressure: 0,
+    buttons: 0,
+    tipDown: false,
+    tiltX: 0.25,
+    tiltY: -0.5,
+    rotation: 30,
+    pointingDeviceType: "eraser",
+    uniqueId: 99,
+    status: 16,
+    changed: 0
+  }
+});
+
+inputs = test.getInputs();
+const macPen = inputs.find(input => input.type === "pen");
+assert.equal(macPen.hasCommonTilt, true);
+assert.equal(macPen.tiltX, 0.25);
+assert.equal(macPen.tiltY, -0.5);
+assert.equal(macPen.pressure, 0.5);
+assert.equal(macPen.deviceType, "eraser");
+assert.equal(macPen.inverted, true);
+test.updatePanels(true);
+assert.match(elements.get("supportStatus").innerHTML, /macOS/);
+assert.match(elements.get("pointerList").innerHTML, /Tilt X \/ Y/);
+
+console.log("example-monitor-tests=ok protocols=1,2 platforms=windows,macos configurable-bridge=ok");

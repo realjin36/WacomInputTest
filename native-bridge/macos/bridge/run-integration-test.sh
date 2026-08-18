@@ -8,8 +8,13 @@ executable="$script_dir/../../../dist/macos/WacomNativeBridge.app/Contents/MacOS
 bridge_log="$raw_dir/bridge-integration.log"
 events_log="$raw_dir/bridge-ws-events.jsonl"
 summary_log="$raw_dir/bridge-ws-summary.json"
+capture_tool="$script_dir/build/ws-capture"
 
 mkdir -p "$raw_dir"
+mkdir -p "$script_dir/build"
+xcrun swiftc -parse-as-library \
+  -module-cache-path "$script_dir/build/module-cache" \
+  "$script_dir/ws-capture.swift" -o "$capture_tool"
 "$executable" --no-window --duration 22 > "$bridge_log" 2>&1 &
 bridge_pid=$!
 trap 'kill "$bridge_pid" 2>/dev/null || true' INT TERM EXIT
@@ -28,7 +33,7 @@ if [[ "$ready" != true ]]; then
   exit 2
 fi
 
-node "$script_dir/ws-capture.mjs" 8765 18000 > "$events_log" 2> "$summary_log"
+"$capture_tool" 8765 18000 > "$events_log" 2> "$summary_log"
 capture_status=$?
 wait "$bridge_pid"
 bridge_status=$?
