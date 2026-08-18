@@ -1,8 +1,32 @@
 # macOS 최종 실제 장치 검증
 
-검증일: 2026-08-15  
 대상 장치: Cintiq Pro 24 Touch  
-최종 패키지: `dist/macos/WacomInputTest.app`
+현재 패키지: `dist/macos/WacomNativeBridge.app`
+
+## 2026-08-18 브리지·예제 분리 회귀 검증
+
+- Apple Silicon 앱 빌드 및 ad-hoc 코드 서명 검증 통과
+- 앱 번들에 HTML, JavaScript, CSS 및 `Contents/Resources/Web`이 없음을 확인
+- `GET /`가 protocol 2 서비스 설명 JSON을 반환
+- `/index.html`이 `404`를 반환
+- loopback Origin과 `--allowed-origin`의 CORS 응답 확인
+- 허용되지 않은 Origin의 `403` 거부 확인
+- Origin 없는 네이티브 WebSocket 클라이언트의 protocol 2 hello 확인
+- GUI 실행 시 상태 창만 열리고 브라우저가 자동 실행되지 않음을 사용자 확인
+- 상태 창의 종료 버튼으로 서버와 앱이 정상 종료됨을 사용자 확인
+
+18초 실제 입력 WebSocket 캡처:
+
+- 수신 이벤트: 1,339, sequence `1..1339`, gap `0`
+- touch frames/contacts: `1,006 / 5,325`, 최대 동시 touch `8`
+- pen packets: `332`, 양의 압력 packet `321`
+- proximity messages: `1`
+- invalid messages: `0`
+- 서버 전체 produced/broadcast: `1,619 / 1,619`
+- input/client drop: `0 / 0`
+- truncated touch frames: `0`
+
+## 2026-08-15 전체 기능 기준선
 
 ## 자동 검증
 
