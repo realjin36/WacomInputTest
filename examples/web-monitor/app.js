@@ -24,6 +24,7 @@ const TOUCH_STALE_MS = 500;
 const PEN_STALE_MS = 180;
 const RECONNECT_MAX_MS = 3000;
 const DEFAULT_BRIDGE_HTTP_URL = "http://127.0.0.1:8765";
+const PEN_TILT_INDICATOR_LENGTH = 72;
 
 function resolveBridgeEndpoints(search = globalThis.location?.search || "") {
   const configured = new URLSearchParams(search).get("bridge") || DEFAULT_BRIDGE_HTTP_URL;
@@ -533,11 +534,17 @@ function drawCanvas() {
       ctx.moveTo(0, 0);
       if (input.hasCommonTilt) {
         // AppKit tiltY increases upward, while Canvas Y increases downward.
-        ctx.lineTo(input.tiltX * 36, -input.tiltY * 36);
+        ctx.lineTo(
+          input.tiltX * PEN_TILT_INDICATOR_LENGTH,
+          -input.tiltY * PEN_TILT_INDICATOR_LENGTH
+        );
       } else {
         const tilt = clamp01((90 - input.altitude) / 90);
         const radians = input.azimuth * Math.PI / 180;
-        ctx.lineTo(Math.sin(radians) * 36 * tilt, -Math.cos(radians) * 36 * tilt);
+        ctx.lineTo(
+          Math.sin(radians) * PEN_TILT_INDICATOR_LENGTH * tilt,
+          -Math.cos(radians) * PEN_TILT_INDICATOR_LENGTH * tilt
+        );
       }
       ctx.stroke();
     }
