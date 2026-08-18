@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [ValidateSet("Debug", "Release")]
-    [string]$Configuration = "Release"
+    [string]$Configuration = "Release",
+    [switch]$SkipTests
 )
 
 $ErrorActionPreference = "Stop"
@@ -14,6 +15,7 @@ $outputDirectory = Join-Path $projectRoot "dist\windows"
 $outputExecutable = Join-Path $outputDirectory "WacomInputTest.exe"
 $checksumFile = Join-Path $outputDirectory "WacomInputTest.exe.sha256"
 $stagingDirectory = Join-Path ([IO.Path]::GetTempPath()) ("WacomInputTest-publish-" + [Guid]::NewGuid().ToString("N"))
+$testScript = Join-Path $scriptDirectory "test-windows.ps1"
 
 $sdkVersion = & dotnet --version
 if ($LASTEXITCODE -ne 0) {
@@ -22,6 +24,13 @@ if ($LASTEXITCODE -ne 0) {
 $sdkMajor = [int]($sdkVersion.Split('.')[0])
 if ($sdkMajor -lt 10) {
     throw ".NET 10 SDK or newer is required. Found: $sdkVersion"
+}
+
+if (-not $SkipTests) {
+    & $testScript -Configuration $Configuration
+    if ($LASTEXITCODE -ne 0) {
+        throw "Windows regression suite failed with exit code $LASTEXITCODE"
+    }
 }
 
 New-Item -ItemType Directory -Path $stagingDirectory | Out-Null

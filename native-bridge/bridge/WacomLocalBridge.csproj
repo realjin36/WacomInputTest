@@ -34,6 +34,9 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="WacomLocalBridge.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="..\vendor\wacom\WacomMTDN\*.cs" Link="vendor\WacomMTDN\%(Filename)%(Extension)" />
     <Compile Include="..\vendor\wacom\WintabDN\*.cs" Link="vendor\WintabDN\%(Filename)%(Extension)" />
   </ItemGroup>
