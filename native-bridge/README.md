@@ -1,28 +1,23 @@
-# Wacom native input probe
+# Native bridge implementations
 
-Stage 2 diagnostic program for verifying the two native input paths before the
-localhost WebSocket bridge is added.
+This directory contains the platform hosts behind the Wacom Native Input Bridge.
+The supported integration boundary is the loopback HTTP/WebSocket protocol, not
+an in-process C# or Objective-C++ library API.
 
-- Touch: `WacomMT.dll`, API v4, finger callback in Observer mode
-- Pen: `Wintab32.dll`, private digitizer context and Win32 message loop
-- Runtime: .NET 10, Windows x64
+## Platform hosts
 
-The Wacom wrapper source is copied into `vendor/wacom` from Wacom's official
-`wacom-device-kit-windows` repository. The driver-installed native DLLs are not
-copied into this project.
+- `bridge/`: Windows x64 host using WacomMT, Wintab, ASP.NET Core, and WinForms
+- `macos/bridge/`: macOS host using WacomMultiTouch, AppKit, and a native socket server
+- `bridge-tests/`: Windows contract and queue regression tests
+- `vendor/`: Wacom Windows wrapper source and its license
+- `macos/vendor/`: Wacom macOS headers, sample references, and source notes
 
-## Run
+Both hosts expose the same endpoint and event families. macOS protocol 2 adds
+fields to the Windows protocol 1 compatibility envelope. See
+[`../docs/PROTOCOL.md`](../docs/PROTOCOL.md).
 
-```powershell
-dotnet run --project .\native-bridge\WacomInputProbe.csproj -- --duration 20
-```
+## Diagnostic programs
 
-During the capture interval, use multiple fingers and move the pen into and out
-of proximity. Raw touch contact fields and Wintab packet fields are printed to
-the console, followed by event counts.
-
-`run-probe.cmd` performs the same 20-second capture and keeps the console open.
-
-The process must run on the normal interactive desktop. A sandboxed process can
-load both Wacom DLLs and open their contexts successfully while still receiving
-zero native callbacks/messages.
+`WacomInputProbe.csproj`, `Program.cs`, `run-probe.cmd`, and the macOS probe
+directories are low-level device diagnostics. They are not required by a project
+that consumes a packaged bridge over WebSocket.

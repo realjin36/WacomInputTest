@@ -1,0 +1,11 @@
+# Platform build output
+dist/
+**/bin/
+**/obj/
+**/build/
+native-bridge/single-file/
+
+# Local tool and OS files
+.DS_Store
+*.user
+*.suo

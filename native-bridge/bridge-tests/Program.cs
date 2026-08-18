@@ -3,9 +3,9 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Channels;
-using WacomLocalBridge;
+using WacomNativeBridge;
 
-namespace WacomLocalBridge.Tests;
+namespace WacomNativeBridge.Tests;
 
 internal static class Program
 {
@@ -107,9 +107,9 @@ internal static class Program
     private static Task TestEmbeddedWebAssets()
     {
         var resources = typeof(BridgeOptions).Assembly.GetManifestResourceNames().ToHashSet(StringComparer.Ordinal);
-        True(resources.Contains("WacomLocalBridge.Web.index.html"));
-        True(resources.Contains("WacomLocalBridge.Web.app.js"));
-        True(resources.Contains("WacomLocalBridge.Web.styles.css"));
+        True(resources.Contains("WacomNativeBridge.Web.index.html"));
+        True(resources.Contains("WacomNativeBridge.Web.app.js"));
+        True(resources.Contains("WacomNativeBridge.Web.styles.css"));
         return Task.CompletedTask;
     }
 

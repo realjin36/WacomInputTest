@@ -8,7 +8,7 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
-$nativeTestProject = Join-Path $scriptDirectory "bridge-tests\WacomLocalBridge.Tests.csproj"
+$nativeTestProject = Join-Path $scriptDirectory "bridge-tests\WacomNativeBridge.Tests.csproj"
 $webTest = Join-Path $scriptDirectory "bridge\web-compat-test.mjs"
 
 $sdkVersion = & dotnet --version

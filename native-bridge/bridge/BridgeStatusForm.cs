@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-namespace WacomLocalBridge;
+namespace WacomNativeBridge;
 
 internal sealed class BridgeStatusForm : Form
 {
@@ -28,7 +28,7 @@ internal sealed class BridgeStatusForm : Form
     {
         _runtime = runtime;
 
-        Text = "Wacom Input Test";
+        Text = "Wacom Native Input Bridge";
         ClientSize = new Size(480, 490);
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;

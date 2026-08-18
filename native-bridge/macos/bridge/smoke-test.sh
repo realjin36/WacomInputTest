@@ -3,7 +3,7 @@ set -euo pipefail
 unsetopt BG_NICE
 
 script_dir=${0:A:h}
-executable="$script_dir/../../../dist/macos/WacomInputTest.app/Contents/MacOS/WacomInputTest"
+executable="$script_dir/../../../dist/macos/WacomNativeBridge.app/Contents/MacOS/WacomNativeBridge"
 log="$script_dir/build/server-smoke.log"
 health="$script_dir/build/health.json"
 status_file="$script_dir/build/status.json"
@@ -39,7 +39,7 @@ node -e '
   if (!health.ok || !health.touchReady || !health.penReady) throw new Error("health not ready");
   if (status.protocolVersion !== 2 || status.url !== "http://127.0.0.1:8765") throw new Error("bad status envelope");
   if (status.native.platform !== "macos" || !status.native.touchDevices.length) throw new Error("missing macOS capabilities");
-  if (!index.includes("Wacom Native Input Monitor")) throw new Error("missing web UI");
+  if (!index.includes("Wacom Native Input Bridge")) throw new Error("missing example web UI");
   console.log(`http=ok touchReady=${health.touchReady} penReady=${health.penReady} devices=${status.native.touchDevices.length}`);
 ' "$health" "$status_file" "$index"
 

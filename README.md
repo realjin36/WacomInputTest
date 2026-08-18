@@ -1,47 +1,152 @@
-# Wacom Native Input Monitor
+# Wacom Native Input Bridge
 
-macOS 버전 구현을 이어받을 때는 먼저 [MACOS_HANDOFF.md](MACOS_HANDOFF.md)를 읽으세요.
+Cross-platform localhost bridge for receiving native Wacom touch and pen input
+from Windows and macOS applications.
 
-Windows와 macOS의 Wacom Cintiq Pro 네이티브 입력을 기본 브라우저에서 시각화하는
-로컬 테스트 앱입니다.
+The bridge captures native tablet events, normalizes them into a shared JSON
+envelope, and exposes them to other applications over HTTP and WebSocket. The
+bundled web monitor is an example client for development and device diagnostics;
+it is not the core product.
 
-브라우저 Pointer Events가 아니라 다음 네이티브 입력을 localhost WebSocket으로 받아 표시합니다.
+This is an independent project and is not an official Wacom product.
 
-- 터치: WacomMT Observer callback
-- 펜: Wintab Digitizer context
-- 전달: `ws://127.0.0.1:8765/ws`
+## What it provides
 
-## 실행
+- Native touch capture through WacomMT on Windows and macOS
+- Native pen capture through Wintab on Windows and AppKit tablet events on macOS
+- Loopback-only HTTP server at `127.0.0.1:8765`
+- Real-time WebSocket stream at `ws://127.0.0.1:8765/ws`
+- Device capabilities, coordinate bounds, counters, and drop metrics
+- Independent bounded queues so a slow client cannot block native callbacks
+- Small status window with connection state, browser launch, and clean shutdown
+- Headless runtime options for integration into another local application
 
-Windows의 `dist/windows/WacomInputTest.exe` 또는 macOS의
-`dist/macos/WacomInputTest.app`을 실행하면 브리지가 시작되고 시스템 기본 브라우저에서
-<http://127.0.0.1:8765>가 자동으로 열립니다. 웹 화면은 실행 파일 안에
-포함되어 있으므로 다른 파일을 함께 복사할 필요가 없습니다.
+```text
+Wacom driver / OS tablet events
+              │
+              ▼
+      Wacom Native Input Bridge
+        ├─ GET /health
+        ├─ GET /api/status
+        └─ WS  /ws
+              │
+              ├─ your web application
+              ├─ desktop application
+              └─ bundled example monitor
+```
 
-브리지 창을 닫으면 입력 수집과 웹 서버가 함께 종료됩니다.
+## Use it from another project
 
-Windows 배포본은 Wacom 드라이버가 설치된 Windows x64 환경을 대상으로 합니다.
-.NET 런타임은 실행 파일에 포함되어 있어 별도로 설치할 필요가 없습니다. 저장소 루트의
-`WacomInputTest.exe`는 포팅 전 기준 파일이므로 최종 배포에 사용하지 않습니다.
+Start the bridge, then connect a WebSocket client. The first message is always
+`bridge.hello`; later messages are `touch.frame`, `pen.packet`, or
+`pen.proximity` events.
 
-## Windows 빌드와 테스트
+```js
+const socket = new WebSocket("ws://127.0.0.1:8765/ws");
 
-개발 환경에는 .NET 10 SDK와 Node.js가 필요합니다. Windows PowerShell에서 실행합니다.
+socket.addEventListener("message", ({ data }) => {
+  const message = JSON.parse(data);
+
+  if (message.type === "bridge.hello") {
+    console.log("bridge ready", message.protocolVersion, message.status);
+  } else if (message.type === "touch.frame") {
+    renderTouches(message.touch.contacts);
+  } else if (message.type === "pen.packet") {
+    renderPen(message.pen);
+  } else if (message.type === "pen.proximity") {
+    updatePenProximity(message.proximity);
+  }
+});
+```
+
+Use the capability and coordinate bounds in `bridge.hello.status.native` or
+`GET /api/status` instead of assuming a fixed tablet resolution. Windows emits
+protocol 1 and macOS emits the additive protocol 2. Clients should ignore fields
+they do not recognize. See [the protocol reference](docs/PROTOCOL.md) for the
+message contract and platform differences.
+
+## Endpoints
+
+| Endpoint | Purpose |
+| --- | --- |
+| `GET /health` | Touch and pen readiness |
+| `GET /api/status` | Capabilities, coordinate bounds, counters, and queue metrics |
+| `WS /ws` | Native input event stream |
+| `GET /` | Bundled example web monitor |
+
+The server accepts only `http://127.0.0.1` or `http://localhost` URLs and binds
+to loopback. It is not intended to expose tablet input to a network.
+
+## Run packaged applications
+
+- Windows: `dist/windows/WacomNativeBridge.exe`
+- macOS: `dist/macos/WacomNativeBridge.app`
+
+Launching the packaged bridge opens the example monitor in the system default
+browser. For another web client, launch with a custom loopback URL/port or host
+your client separately and connect it to `/ws`.
+
+Common runtime options:
+
+- `--web-root PATH`
+- `--duration SECONDS`
+- `--no-browser`
+- `--no-window`
+
+Windows selects the endpoint with `--url http://127.0.0.1:PORT`; macOS selects
+the port with `--port PORT`.
+
+## Build and test
+
+Windows requires the .NET 10 SDK and Node.js:
 
 ```powershell
 .\native-bridge\test-windows.ps1
 .\native-bridge\build-windows.ps1
 ```
 
-빌드 스크립트는 자동 회귀 테스트를 먼저 실행한 뒤 x64 단일 실행 파일과 SHA-256 파일을
-`dist/windows`에 생성합니다. 최종 검증 결과와 배포 정보는
-[`native-bridge/WINDOWS_RELEASE.md`](native-bridge/WINDOWS_RELEASE.md)에 기록되어 있습니다.
+macOS requires Xcode command-line tools and the Wacom Multi-Touch SDK framework:
 
-## 화면에 표시되는 데이터
+```sh
+cd native-bridge/macos/bridge
+./build.sh
+./smoke-test.sh
+```
 
-- 최대 10개 터치의 ID, Down/Hold/Up, 원시 좌표, 접촉 크기, 감도, 방향, 신뢰도
-- 펜 호버/접촉, 버튼 비트, 압력, 방위각, 고도각, 트위스트, Z, 지우개 상태
-- 브리지 연결 상태, 이벤트 sequence, 브라우저 수신 누락 수
+The Wacom driver supplies the runtime native libraries. Windows builds do not
+bundle `WacomMT.dll` or `Wintab32.dll`; macOS builds weak-link the installed
+`WacomMultiTouch.framework`.
 
-터치와 펜 좌표는 각 장치의 네이티브 축 범위를 캔버스 전체에 맞춰 표시합니다.
-`C`는 화면 초기화, `F`는 전체 화면 전환입니다.
+## Repository layout
+
+```text
+docs/PROTOCOL.md                  integration contract
+examples/web-monitor/            optional browser-based example client
+native-bridge/bridge/             Windows bridge host (.NET/WinForms)
+native-bridge/bridge-tests/       Windows contract regression tests
+native-bridge/macos/bridge/       macOS bridge host (Objective-C++)
+native-bridge/macos/diagnostics/  actual-device diagnostic records and tools
+native-bridge/vendor/             Wacom Windows wrapper source and license
+```
+
+`MACOS_HANDOFF.md` and `native-bridge/WINDOWS_BASELINE.md` are historical
+implementation records. They are not the primary integration documentation.
+
+## Example web monitor
+
+The files in `examples/web-monitor` are embedded into packaged builds and served
+at `/`. They demonstrate coordinate mapping, pressure, tilt, proximity,
+multi-touch, sequence-gap tracking, and platform fallback handling. Replace them
+at runtime with `--web-root PATH`, or ignore them and consume the WebSocket from
+your own application.
+
+## License
+
+Original bridge code and documentation are available under the
+[MIT License](LICENSE).
+
+Wacom wrapper, SDK-derived, sample, header, and vendor files remain subject to
+their applicable Wacom license terms. See
+[`native-bridge/vendor/wacom/WACOM-SDK-LICENSE.md`](native-bridge/vendor/wacom/WACOM-SDK-LICENSE.md)
+and the source notices under `native-bridge/macos/vendor/wacom` before
+redistributing those files.

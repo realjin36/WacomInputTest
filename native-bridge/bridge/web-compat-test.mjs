@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(scriptDirectory, "..", "..");
-const appSource = fs.readFileSync(path.join(projectRoot, "app.js"), "utf8");
+const appSource = fs.readFileSync(path.join(projectRoot, "examples", "web-monitor", "app.js"), "utf8");
 
 class MockClassList {
   values = new Set();

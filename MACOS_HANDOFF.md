@@ -1,4 +1,7 @@
-# Wacom Native Input Monitor — macOS 구현 인수인계
+# Wacom Native Input Monitor — macOS 구현 인수인계 (historical)
+
+> 이 문서는 최초 macOS 포팅 당시의 작업 기록이며 예전 제품명과 경로를 포함한다.
+> 현재 연동 방법은 `README.md`와 `docs/PROTOCOL.md`를 기준으로 한다.
 
 이 문서는 Windows에서 완성된 현재 프로젝트를 macOS 환경의 새 Codex 작업으로 옮겨, macOS 버전을 구현하기 위한 전체 맥락을 제공한다. 새 작업은 과거 대화가 없다고 가정하고 이 문서와 실제 소스 코드를 함께 읽어야 한다.
 

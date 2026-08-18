@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace WacomLocalBridge;
+namespace WacomNativeBridge;
 
 internal sealed class BridgeRuntime : IAsyncDisposable
 {
@@ -290,7 +290,7 @@ internal sealed class BridgeRuntime : IAsyncDisposable
             return;
         }
 
-        var resourceName = $"WacomLocalBridge.Web.{fileName}";
+        var resourceName = $"WacomNativeBridge.Web.{fileName}";
         var assembly = Assembly.GetExecutingAssembly();
         app.MapGet(route, () => assembly.GetManifestResourceStream(resourceName) is { } stream
             ? Results.Stream(stream, contentType)

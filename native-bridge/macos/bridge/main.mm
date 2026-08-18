@@ -165,7 +165,7 @@ void OpenWebApp(std::uint16_t port) {
                   styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable
                     backing:NSBackingStoreBuffered
                       defer:NO];
-    self.window.title = @"Wacom Input Test";
+    self.window.title = @"Wacom Native Input Bridge";
     self.window.backgroundColor = NSColor.whiteColor;
     self.window.releasedWhenClosed = NO;
     self.window.delegate = self;

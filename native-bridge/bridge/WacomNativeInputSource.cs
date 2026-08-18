@@ -4,7 +4,7 @@ using System.Threading.Channels;
 using WacomMTDN;
 using WintabDN;
 
-namespace WacomLocalBridge;
+namespace WacomNativeBridge;
 
 internal sealed class WacomNativeInputSource : IDisposable
 {

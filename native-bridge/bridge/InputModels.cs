@@ -1,4 +1,4 @@
-namespace WacomLocalBridge;
+namespace WacomNativeBridge;
 
 internal sealed record NativeInputEvent(
     long Sequence,

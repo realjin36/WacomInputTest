@@ -1,4 +1,8 @@
-# Local bridge protocol 2 (macOS)
+# macOS protocol 2 supplement
+
+The cross-platform integration contract is documented in
+[`../../../docs/PROTOCOL.md`](../../../docs/PROTOCOL.md). This file preserves
+macOS-specific field details and the original actual-device verification record.
 
 `WacomInputBridge`는 기존 Windows protocol 1의 메시지 종류와 필드를 유지하면서 macOS
 AppKit 값을 가산 필드로 추가한 protocol 2를 제공한다. 기존 Windows 브리지는 계속 protocol

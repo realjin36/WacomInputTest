@@ -4,7 +4,7 @@ unsetopt BG_NICE
 
 script_dir=${0:A:h}
 raw_dir="$script_dir/../diagnostics/raw"
-executable="$script_dir/../../../dist/macos/WacomInputTest.app/Contents/MacOS/WacomInputTest"
+executable="$script_dir/../../../dist/macos/WacomNativeBridge.app/Contents/MacOS/WacomNativeBridge"
 bridge_log="$raw_dir/bridge-integration.log"
 events_log="$raw_dir/bridge-ws-events.jsonl"
 summary_log="$raw_dir/bridge-ws-summary.json"

@@ -25,7 +25,7 @@ Build:
 ./build.sh
 ```
 
-The packaged product is written to `dist/macos/WacomInputTest.app`. Launching
+The packaged product is written to `dist/macos/WacomNativeBridge.app`. Launching
 the app starts the loopback server and opens `http://127.0.0.1:8765` in the
 user's macOS default browser. If that fails, it prints the URL for manual access.
 While the bridge is running, a small status window shows Touch/Pen readiness,
@@ -37,7 +37,7 @@ server cleanly.
 Diagnostic run without browser launch:
 
 ```sh
-../../../dist/macos/WacomInputTest.app/Contents/MacOS/WacomInputTest --no-browser --no-window --duration 30
+../../../dist/macos/WacomNativeBridge.app/Contents/MacOS/WacomNativeBridge --no-browser --no-window --duration 30
 ```
 
 Input callbacks publish fixed-size snapshots to a 16,384-event bounded queue.

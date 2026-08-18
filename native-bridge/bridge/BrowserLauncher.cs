@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace WacomLocalBridge;
+namespace WacomNativeBridge;
 
 internal static class BrowserLauncher
 {

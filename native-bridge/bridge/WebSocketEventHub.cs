@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text;
 using System.Threading.Channels;
 
-namespace WacomLocalBridge;
+namespace WacomNativeBridge;
 
 internal sealed class WebSocketEventHub
 {

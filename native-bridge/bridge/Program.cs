@@ -1,6 +1,6 @@
 using System.Windows.Forms;
 
-namespace WacomLocalBridge;
+namespace WacomNativeBridge;
 
 internal static class Program
 {

@@ -1,4 +1,4 @@
-namespace WacomLocalBridge;
+namespace WacomNativeBridge;
 
 internal sealed record BridgeOptions(
     string Url,

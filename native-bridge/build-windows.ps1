@@ -10,11 +10,11 @@ Set-StrictMode -Version Latest
 
 $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
 $projectRoot = Split-Path -Parent $scriptDirectory
-$projectFile = Join-Path $scriptDirectory "bridge\WacomLocalBridge.csproj"
+$projectFile = Join-Path $scriptDirectory "bridge\WacomNativeBridge.csproj"
 $outputDirectory = Join-Path $projectRoot "dist\windows"
-$outputExecutable = Join-Path $outputDirectory "WacomInputTest.exe"
-$checksumFile = Join-Path $outputDirectory "WacomInputTest.exe.sha256"
-$stagingDirectory = Join-Path ([IO.Path]::GetTempPath()) ("WacomInputTest-publish-" + [Guid]::NewGuid().ToString("N"))
+$outputExecutable = Join-Path $outputDirectory "WacomNativeBridge.exe"
+$checksumFile = Join-Path $outputDirectory "WacomNativeBridge.exe.sha256"
+$stagingDirectory = Join-Path ([IO.Path]::GetTempPath()) ("WacomNativeBridge-publish-" + [Guid]::NewGuid().ToString("N"))
 $testScript = Join-Path $scriptDirectory "test-windows.ps1"
 
 $sdkVersion = & dotnet --version
@@ -45,12 +45,12 @@ try {
         throw "dotnet publish failed with exit code $LASTEXITCODE"
     }
 
-    $stagedExecutable = Join-Path $stagingDirectory "WacomInputTest.exe"
+    $stagedExecutable = Join-Path $stagingDirectory "WacomNativeBridge.exe"
     if (-not (Test-Path -LiteralPath $stagedExecutable -PathType Leaf)) {
-        throw "Publish did not produce WacomInputTest.exe"
+        throw "Publish did not produce WacomNativeBridge.exe"
     }
 
-    $unexpectedFiles = @(Get-ChildItem -LiteralPath $stagingDirectory -File | Where-Object Name -ne "WacomInputTest.exe")
+    $unexpectedFiles = @(Get-ChildItem -LiteralPath $stagingDirectory -File | Where-Object Name -ne "WacomNativeBridge.exe")
     if ($unexpectedFiles.Count -ne 0) {
         throw "Publish is not single-file. Unexpected: $($unexpectedFiles.Name -join ', ')"
     }
@@ -73,7 +73,7 @@ try {
     }
 
     $hash = (Get-FileHash -LiteralPath $outputExecutable -Algorithm SHA256).Hash.ToLowerInvariant()
-    Set-Content -LiteralPath $checksumFile -Value "$hash  WacomInputTest.exe" -Encoding ascii
+    Set-Content -LiteralPath $checksumFile -Value "$hash  WacomNativeBridge.exe" -Encoding ascii
 
     $sizeMiB = [Math]::Round((Get-Item -LiteralPath $outputExecutable).Length / 1MB, 2)
     Write-Host "Windows package ready"

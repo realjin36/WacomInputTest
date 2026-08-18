@@ -1,4 +1,7 @@
-# Windows 앱 포팅 기준선
+# Windows 앱 포팅 기준선 (historical)
+
+> 이 문서는 Windows 제품화 과정의 기준선과 검증 기록이다. 당시의
+> `WacomInputTest` 이름은 현재 `WacomNativeBridge`로 변경되었다.
 
 확인일: 2026-08-15
 

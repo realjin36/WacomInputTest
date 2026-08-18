@@ -1,6 +1,6 @@
-# Local HTTP and WebSocket bridge
+# Windows native bridge host
 
-The bridge listens only on `127.0.0.1:8765` and serves the existing test page.
+The bridge listens only on `127.0.0.1:8765` and serves the bundled example page.
 The page consumes only this native stream; browser Pointer Events are not used
 for the visualization.
 
@@ -82,7 +82,7 @@ From a Windows PowerShell prompt at the repository root:
 
 The script requires the .NET 10 SDK and Node.js. It runs the complete regression
 suite before publishing a self-contained, compressed,
-single-file, x64 GUI executable to `dist\windows\WacomInputTest.exe`. It verifies
+single-file, x64 GUI executable to `dist\windows\WacomNativeBridge.exe`. It verifies
 that the output is an x64 PE with the Windows GUI subsystem and writes a SHA-256
 file beside it. The product does not require a separately installed .NET runtime;
 the Wacom driver still supplies `WacomMT.dll` and `Wintab32.dll` at runtime.
@@ -92,7 +92,7 @@ For an explicitly diagnostic-only build, tests can be skipped with `-SkipTests`.
 For source diagnostics with a console, override the subsystem and disable the UI:
 
 ```powershell
-dotnet run --project .\native-bridge\bridge\WacomLocalBridge.csproj `
+dotnet run --project .\native-bridge\bridge\WacomNativeBridge.csproj `
   --configuration Release -p:WacomHeadlessBuild=true -- `
   --no-window --no-browser --duration 5
 ```

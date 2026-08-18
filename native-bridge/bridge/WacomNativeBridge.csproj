@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType Condition="'$(WacomHeadlessBuild)' != 'true'">WinExe</OutputType>
+    <OutputType Condition="'$(WacomHeadlessBuild)' == 'true'">Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PlatformTarget>x64</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>WacomNativeBridge</AssemblyName>
+    <RootNamespace>WacomNativeBridge</RootNamespace>
+    <Product>Wacom Native Input Bridge</Product>
+    <Title>Wacom Native Input Bridge</Title>
+    <Description>Local HTTP and WebSocket bridge for native Wacom touch and pen input</Description>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Copyright>Copyright © 2026</Copyright>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+    <UseAppHost>true</UseAppHost>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="WacomNativeBridge.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\vendor\wacom\WacomMTDN\*.cs" Link="vendor\WacomMTDN\%(Filename)%(Extension)" />
+    <Compile Include="..\vendor\wacom\WintabDN\*.cs" Link="vendor\WintabDN\%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\examples\web-monitor\index.html" Link="Web\index.html" LogicalName="WacomNativeBridge.Web.index.html" />
+    <EmbeddedResource Include="..\..\examples\web-monitor\app.js" Link="Web\app.js" LogicalName="WacomNativeBridge.Web.app.js" />
+    <EmbeddedResource Include="..\..\examples\web-monitor\styles.css" Link="Web\styles.css" LogicalName="WacomNativeBridge.Web.styles.css" />
+  </ItemGroup>
+</Project>

@@ -15,7 +15,7 @@
     </array>
     <key>com.apple.security.temporary-exception.mach-register.global-name</key>
     <array>
-        <string>com.openai.WacomInputTest.WacomTouch</string>
+        <string>io.github.realjin36.WacomNativeBridge.WacomTouch</string>
     </array>
 </dict>
 </plist>
