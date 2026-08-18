@@ -12,6 +12,7 @@
 #include "BridgeTypes.h"
 #include "LocalServer.h"
 #include "NativeInputSource.h"
+#include "OriginPolicy.h"
 
 #include <algorithm>
 #include <array>
@@ -324,11 +325,13 @@ bool ReadHttpRequest(int socket, HttpRequest& request) {
 struct LocalServer::Impl {
     struct Client;
 
-    Impl(NativeInputSource& source, std::uint16_t serverPort)
-        : input(source), port(serverPort) {}
+    Impl(NativeInputSource& source, std::uint16_t serverPort,
+         std::vector<std::string> origins)
+        : input(source), port(serverPort), allowedOrigins(std::move(origins)) {}
 
     NativeInputSource& input;
     std::uint16_t port;
+    std::vector<std::string> allowedOrigins;
     std::atomic<bool> stopping{false};
     int listener = -1;
     std::thread acceptThread;
@@ -618,13 +621,19 @@ struct LocalServer::Impl {
     }
 
     void SendHttp(int socket, int status, std::string_view statusText,
-                  std::string_view contentType, std::string_view body) {
+                  std::string_view contentType, std::string_view body,
+                  std::string_view corsOrigin = {}, bool preflight = false) {
         std::ostringstream header;
         header << "HTTP/1.1 " << status << ' ' << statusText << "\r\n"
                << "Content-Type: " << contentType << "\r\n"
                << "Content-Length: " << body.size() << "\r\n"
-               << "Cache-Control: no-store\r\n"
-               << "Connection: close\r\n\r\n";
+               << "Cache-Control: no-store\r\n";
+        if (!corsOrigin.empty()) {
+            header << "Access-Control-Allow-Origin: " << corsOrigin << "\r\n"
+                   << "Vary: Origin\r\n";
+            if (preflight) header << "Access-Control-Allow-Methods: GET\r\n";
+        }
+        header << "Connection: close\r\n\r\n";
         const std::string headers = header.str();
         SendAll(socket, headers.data(), headers.size());
         SendAll(socket, body.data(), body.size());
@@ -656,8 +665,31 @@ struct LocalServer::Impl {
             setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
 
             HttpRequest request;
-            if (!ReadHttpRequest(socket, request) || request.method != "GET") {
+            if (!ReadHttpRequest(socket, request)) {
                 SendHttp(socket, 400, "Bad Request", "text/plain; charset=utf-8", "Bad request");
+                close(socket);
+                return;
+            }
+
+            std::string corsOrigin;
+            const auto origin = request.headers.find("origin");
+            if (origin != request.headers.end()) {
+                if (!BridgeOriginPolicy::IsAllowed(origin->second, allowedOrigins)) {
+                    SendHttp(socket, 403, "Forbidden", "text/plain; charset=utf-8", "Origin not allowed");
+                    close(socket);
+                    return;
+                }
+                corsOrigin = origin->second;
+            }
+            if (request.method == "OPTIONS") {
+                SendHttp(socket, 204, "No Content", "text/plain; charset=utf-8", "",
+                         corsOrigin, true);
+                close(socket);
+                return;
+            }
+            if (request.method != "GET") {
+                SendHttp(socket, 400, "Bad Request", "text/plain; charset=utf-8", "Bad request",
+                         corsOrigin);
                 close(socket);
                 return;
             }
@@ -675,22 +707,22 @@ struct LocalServer::Impl {
             }
 
             if (request.path == "/") {
-                SendHttp(socket, 200, "OK", "application/json; charset=utf-8", ServiceJson());
+                SendHttp(socket, 200, "OK", "application/json; charset=utf-8", ServiceJson(), corsOrigin);
                 close(socket);
                 return;
             }
             if (request.path == "/health") {
-                SendHttp(socket, 200, "OK", "application/json; charset=utf-8", HealthJson());
+                SendHttp(socket, 200, "OK", "application/json; charset=utf-8", HealthJson(), corsOrigin);
                 close(socket);
                 return;
             }
             if (request.path == "/api/status") {
-                SendHttp(socket, 200, "OK", "application/json; charset=utf-8", StatusJson());
+                SendHttp(socket, 200, "OK", "application/json; charset=utf-8", StatusJson(), corsOrigin);
                 close(socket);
                 return;
             }
 
-            SendHttp(socket, 404, "Not Found", "text/plain; charset=utf-8", "Not found");
+            SendHttp(socket, 404, "Not Found", "text/plain; charset=utf-8", "Not found", corsOrigin);
             close(socket);
         }
     }
@@ -773,8 +805,9 @@ struct LocalServer::Impl {
     }
 };
 
-LocalServer::LocalServer(NativeInputSource& input, std::uint16_t port)
-    : impl_(std::make_unique<Impl>(input, port)) {}
+LocalServer::LocalServer(NativeInputSource& input, std::uint16_t port,
+                         std::vector<std::string> allowedOrigins)
+    : impl_(std::make_unique<Impl>(input, port, std::move(allowedOrigins))) {}
 
 LocalServer::~LocalServer() {
     Stop();

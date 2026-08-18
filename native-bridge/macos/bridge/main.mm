@@ -3,6 +3,7 @@
 
 #include "LocalServer.h"
 #include "NativeInputSource.h"
+#include "OriginPolicy.h"
 
 #include <atomic>
 #include <chrono>
@@ -11,8 +12,10 @@
 #include <cstdlib>
 #include <iostream>
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace {
 
@@ -20,6 +23,7 @@ struct Options {
     std::uint16_t port = 8765;
     std::optional<double> durationSeconds;
     bool showWindow = true;
+    std::vector<std::string> allowedOrigins;
 };
 
 std::atomic<bool> gStopRequested{false};
@@ -46,6 +50,15 @@ Options ParseOptions(int argc, char* argv[]) {
             }
         } else if (argument == "--no-window") {
             options.showWindow = false;
+        } else if (argument == "--allowed-origin" && index + 1 < argc) {
+            const auto origin = BridgeOriginPolicy::Parse(argv[++index]);
+            if (!origin.has_value()) {
+                throw std::invalid_argument(
+                    "--allowed-origin must be an HTTP or HTTPS origin without a path, query, or fragment.");
+            }
+            options.allowedOrigins.push_back(origin->normalized);
+        } else {
+            throw std::invalid_argument("Unknown or incomplete argument: " + std::string(argument));
         }
     }
     return options;
@@ -252,11 +265,17 @@ int main(int argc, char* argv[]) {
         std::cout.setf(std::ios::unitbuf);
         std::signal(SIGINT, HandleSignal);
         std::signal(SIGTERM, HandleSignal);
-        const Options options = ParseOptions(argc, argv);
+        Options options;
+        try {
+            options = ParseOptions(argc, argv);
+        } catch (const std::invalid_argument& error) {
+            std::cerr << error.what() << '\n';
+            return 64;
+        }
 
         NativeInputSource input;
         const bool allInputReady = input.Start();
-        LocalServer server(input, options.port);
+        LocalServer server(input, options.port, options.allowedOrigins);
         if (!server.Start()) {
             input.Stop();
             return 3;

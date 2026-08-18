@@ -185,6 +185,31 @@ internal sealed class BridgeRuntime : IAsyncDisposable
         builder.Logging.AddSimpleConsole(console => console.SingleLine = true);
 
         var app = builder.Build();
+        var originPolicy = new OriginPolicy(_options.AllowedOrigins);
+        app.Use(async (context, next) =>
+        {
+            var origin = context.Request.Headers["Origin"].ToString();
+            if (!originPolicy.IsAllowed(origin))
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await context.Response.WriteAsync("Origin not allowed");
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(origin))
+            {
+                context.Response.Headers["Access-Control-Allow-Origin"] = origin;
+                context.Response.Headers["Vary"] = "Origin";
+                if (HttpMethods.IsOptions(context.Request.Method))
+                {
+                    context.Response.Headers["Access-Control-Allow-Methods"] = "GET";
+                    context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    return;
+                }
+            }
+
+            await next(context);
+        });
         app.UseWebSockets(new WebSocketOptions
         {
             KeepAliveInterval = TimeSpan.FromSeconds(15)

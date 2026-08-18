@@ -3,7 +3,8 @@ namespace WacomNativeBridge;
 internal sealed record BridgeOptions(
     string Url,
     TimeSpan? Duration,
-    bool ShowWindow)
+    bool ShowWindow,
+    string[] AllowedOrigins)
 {
     private const string DefaultUrl = "http://127.0.0.1:8765";
 
@@ -12,6 +13,7 @@ internal sealed record BridgeOptions(
         var url = DefaultUrl;
         TimeSpan? duration = null;
         var showWindow = true;
+        var allowedOrigins = new List<string>();
 
         for (var index = 0; index < args.Length; index++)
         {
@@ -28,6 +30,10 @@ internal sealed record BridgeOptions(
             {
                 showWindow = false;
             }
+            else if (args[index] == "--allowed-origin" && index + 1 < args.Length)
+            {
+                allowedOrigins.Add(OriginPolicy.NormalizeAllowedOrigin(args[++index]));
+            }
             else
             {
                 throw new ArgumentException($"Unknown or incomplete argument: {args[index]}");
@@ -41,6 +47,6 @@ internal sealed record BridgeOptions(
             throw new ArgumentException("--url must be an http://127.0.0.1 or http://localhost URL.");
         }
 
-        return new BridgeOptions(url.TrimEnd('/'), duration, showWindow);
+        return new BridgeOptions(url.TrimEnd('/'), duration, showWindow, [.. allowedOrigins]);
     }
 }

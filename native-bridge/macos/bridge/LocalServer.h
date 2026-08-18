@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
+#include <vector>
 
 class NativeInputSource;
 
@@ -14,7 +16,8 @@ struct ServerStatusSnapshot {
 
 class LocalServer {
 public:
-    LocalServer(NativeInputSource& input, std::uint16_t port);
+    LocalServer(NativeInputSource& input, std::uint16_t port,
+                std::vector<std::string> allowedOrigins);
     ~LocalServer();
 
     LocalServer(const LocalServer&) = delete;
