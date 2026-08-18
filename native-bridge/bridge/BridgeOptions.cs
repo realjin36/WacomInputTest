@@ -2,7 +2,6 @@ namespace WacomNativeBridge;
 
 internal sealed record BridgeOptions(
     string Url,
-    string? WebRoot,
     TimeSpan? Duration,
     bool OpenBrowser,
     bool ShowWindow)
@@ -12,7 +11,6 @@ internal sealed record BridgeOptions(
     public static BridgeOptions Parse(string[] args)
     {
         var url = DefaultUrl;
-        string? webRoot = null;
         TimeSpan? duration = null;
         var openBrowser = true;
         var showWindow = true;
@@ -22,10 +20,6 @@ internal sealed record BridgeOptions(
             if (args[index] == "--url" && index + 1 < args.Length)
             {
                 url = args[++index];
-            }
-            else if (args[index] == "--web-root" && index + 1 < args.Length)
-            {
-                webRoot = Path.GetFullPath(args[++index]);
             }
             else if (args[index] == "--duration" && index + 1 < args.Length &&
                      double.TryParse(args[++index], out var seconds) && seconds > 0)
@@ -53,6 +47,6 @@ internal sealed record BridgeOptions(
             throw new ArgumentException("--url must be an http://127.0.0.1 or http://localhost URL.");
         }
 
-        return new BridgeOptions(url.TrimEnd('/'), webRoot, duration, openBrowser, showWindow);
+        return new BridgeOptions(url.TrimEnd('/'), duration, openBrowser, showWindow);
     }
 }

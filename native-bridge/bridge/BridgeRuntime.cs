@@ -1,5 +1,4 @@
 using System.Net.WebSockets;
-using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -71,7 +70,6 @@ internal sealed class BridgeRuntime : IAsyncDisposable
             IsRunning = true;
 
             Console.WriteLine($"Wacom local bridge: {_options.Url}");
-            Console.WriteLine($"Web assets: {(_options.WebRoot is null ? "embedded" : _options.WebRoot)}");
             Console.WriteLine($"Touch ready: {_input.TouchReady}, Pen ready: {_input.PenReady}");
             Console.WriteLine($"WebSocket: {_options.Url.Replace("http://", "ws://")}/ws");
 
@@ -194,6 +192,14 @@ internal sealed class BridgeRuntime : IAsyncDisposable
             KeepAliveInterval = TimeSpan.FromSeconds(15)
         });
 
+        app.MapGet("/", () => Results.Json(new
+        {
+            name = "Wacom Native Input Bridge",
+            protocolVersion = 1,
+            health = "/health",
+            status = "/api/status",
+            webSocket = "/ws"
+        }));
         app.MapGet("/api/status", () => Results.Json(BuildStatus(input, hub)));
         app.MapGet("/health", () => Results.Json(new
         {
@@ -226,11 +232,6 @@ internal sealed class BridgeRuntime : IAsyncDisposable
                 input.RemoveBrowserClient,
                 connectionLifetime.Token);
         });
-
-        MapWebAsset(app, "/", "index.html", "text/html; charset=utf-8");
-        MapWebAsset(app, "/index.html", "index.html", "text/html; charset=utf-8");
-        MapWebAsset(app, "/app.js", "app.js", "text/javascript; charset=utf-8");
-        MapWebAsset(app, "/styles.css", "styles.css", "text/css; charset=utf-8");
         return app;
     }
 
@@ -273,28 +274,6 @@ internal sealed class BridgeRuntime : IAsyncDisposable
             hub.ClientCount,
             hub.BroadcastEvents,
             hub.DroppedClientMessages);
-    }
-
-    private void MapWebAsset(
-        WebApplication app,
-        string route,
-        string fileName,
-        string contentType)
-    {
-        if (_options.WebRoot is not null)
-        {
-            var path = Path.Combine(_options.WebRoot, fileName);
-            app.MapGet(route, () => File.Exists(path)
-                ? Results.File(path, contentType)
-                : Results.NotFound($"Missing web file: {path}"));
-            return;
-        }
-
-        var resourceName = $"WacomNativeBridge.Web.{fileName}";
-        var assembly = Assembly.GetExecutingAssembly();
-        app.MapGet(route, () => assembly.GetManifestResourceStream(resourceName) is { } stream
-            ? Results.Stream(stream, contentType)
-            : Results.NotFound($"Missing embedded web asset: {resourceName}"));
     }
 
     public ValueTask DisposeAsync()

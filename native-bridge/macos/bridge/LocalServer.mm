@@ -21,8 +21,6 @@
 #include <cmath>
 #include <cstdint>
 #include <cstring>
-#include <filesystem>
-#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <locale>
@@ -321,25 +319,16 @@ bool ReadHttpRequest(int socket, HttpRequest& request) {
     return true;
 }
 
-std::string ReadFile(const std::filesystem::path& path) {
-    std::ifstream stream(path, std::ios::binary);
-    if (!stream) return {};
-    std::ostringstream output;
-    output << stream.rdbuf();
-    return output.str();
-}
-
 }  // namespace
 
 struct LocalServer::Impl {
     struct Client;
 
-    Impl(NativeInputSource& source, std::uint16_t serverPort, std::string root)
-        : input(source), port(serverPort), webRoot(std::move(root)) {}
+    Impl(NativeInputSource& source, std::uint16_t serverPort)
+        : input(source), port(serverPort) {}
 
     NativeInputSource& input;
     std::uint16_t port;
-    std::string webRoot;
     std::atomic<bool> stopping{false};
     int listener = -1;
     std::thread acceptThread;
@@ -602,6 +591,11 @@ struct LocalServer::Impl {
         return output.str();
     }
 
+    std::string ServiceJson() const {
+        return "{\"name\":\"Wacom Native Input Bridge\",\"protocolVersion\":2,"
+               "\"health\":\"/health\",\"status\":\"/api/status\",\"webSocket\":\"/ws\"}";
+    }
+
     void Broadcast(const std::string& payload) {
         std::vector<std::shared_ptr<Client>> snapshot;
         {
@@ -680,6 +674,11 @@ struct LocalServer::Impl {
                 return;
             }
 
+            if (request.path == "/") {
+                SendHttp(socket, 200, "OK", "application/json; charset=utf-8", ServiceJson());
+                close(socket);
+                return;
+            }
             if (request.path == "/health") {
                 SendHttp(socket, 200, "OK", "application/json; charset=utf-8", HealthJson());
                 close(socket);
@@ -691,29 +690,7 @@ struct LocalServer::Impl {
                 return;
             }
 
-            std::string fileName;
-            std::string_view contentType;
-            if (request.path == "/" || request.path == "/index.html") {
-                fileName = "index.html";
-                contentType = "text/html; charset=utf-8";
-            } else if (request.path == "/app.js") {
-                fileName = "app.js";
-                contentType = "text/javascript; charset=utf-8";
-            } else if (request.path == "/styles.css") {
-                fileName = "styles.css";
-                contentType = "text/css; charset=utf-8";
-            } else {
-                SendHttp(socket, 404, "Not Found", "text/plain; charset=utf-8", "Not found");
-                close(socket);
-                return;
-            }
-
-            const std::string body = ReadFile(std::filesystem::path(webRoot) / fileName);
-            if (body.empty()) {
-                SendHttp(socket, 404, "Not Found", "text/plain; charset=utf-8", "Missing web asset");
-            } else {
-                SendHttp(socket, 200, "OK", contentType, body);
-            }
+            SendHttp(socket, 404, "Not Found", "text/plain; charset=utf-8", "Not found");
             close(socket);
         }
     }
@@ -796,8 +773,8 @@ struct LocalServer::Impl {
     }
 };
 
-LocalServer::LocalServer(NativeInputSource& input, std::uint16_t port, std::string webRoot)
-    : impl_(std::make_unique<Impl>(input, port, std::move(webRoot))) {}
+LocalServer::LocalServer(NativeInputSource& input, std::uint16_t port)
+    : impl_(std::make_unique<Impl>(input, port)) {}
 
 LocalServer::~LocalServer() {
     Stop();

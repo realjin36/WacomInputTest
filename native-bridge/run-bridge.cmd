@@ -1,7 +1,7 @@
 @echo off
 setlocal
 pushd "%~dp0"
-dotnet run --project bridge\WacomNativeBridge.csproj --configuration Release -- --web-root ..\examples\web-monitor
+dotnet run --project bridge\WacomNativeBridge.csproj --configuration Release
 set "bridge_exit=%ERRORLEVEL%"
 popd
 pause

@@ -9,7 +9,6 @@
 #include <csignal>
 #include <cstdint>
 #include <cstdlib>
-#include <filesystem>
 #include <iostream>
 #include <optional>
 #include <string>
@@ -20,7 +19,6 @@ namespace {
 struct Options {
     std::uint16_t port = 8765;
     std::optional<double> durationSeconds;
-    std::string webRoot;
     bool launchBrowser = true;
     bool showWindow = true;
 };
@@ -31,15 +29,8 @@ void HandleSignal(int) {
     gStopRequested.store(true, std::memory_order_relaxed);
 }
 
-std::string BundledWebRoot() {
-    NSString* resourcePath = NSBundle.mainBundle.resourcePath;
-    if (resourcePath == nil) return {};
-    return std::filesystem::path(resourcePath.UTF8String).append("Web").string();
-}
-
 Options ParseOptions(int argc, char* argv[]) {
     Options options;
-    options.webRoot = BundledWebRoot();
     for (int index = 1; index < argc; ++index) {
         const std::string_view argument(argv[index]);
         if (argument == "--duration" && index + 1 < argc) {
@@ -54,8 +45,6 @@ Options ParseOptions(int argc, char* argv[]) {
             if (end != argv[index] && *end == '\0' && parsed > 0 && parsed <= 65535) {
                 options.port = static_cast<std::uint16_t>(parsed);
             }
-        } else if (argument == "--web-root" && index + 1 < argc) {
-            options.webRoot = std::filesystem::absolute(argv[++index]).string();
         } else if (argument == "--no-browser") {
             options.launchBrowser = false;
         } else if (argument == "--no-window") {
@@ -303,7 +292,7 @@ int main(int argc, char* argv[]) {
 
         NativeInputSource input;
         const bool allInputReady = input.Start();
-        LocalServer server(input, options.port, options.webRoot);
+        LocalServer server(input, options.port);
         if (!server.Start()) {
             input.Stop();
             return 3;
@@ -313,7 +302,6 @@ int main(int argc, char* argv[]) {
         std::cout << "Wacom macOS local bridge\n"
                   << "HTTP=http://127.0.0.1:" << options.port << '\n'
                   << "WebSocket=ws://127.0.0.1:" << options.port << "/ws\n"
-                  << "webRoot=" << options.webRoot << '\n'
                   << "protocolVersion=2 touchReady=" << initialStatus.touchReady
                   << " penReady=" << initialStatus.penReady << '\n';
 

@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <string>
 
 class NativeInputSource;
 
@@ -15,7 +14,7 @@ struct ServerStatusSnapshot {
 
 class LocalServer {
 public:
-    LocalServer(NativeInputSource& input, std::uint16_t port, std::string webRoot);
+    LocalServer(NativeInputSource& input, std::uint16_t port);
     ~LocalServer();
 
     LocalServer(const LocalServer&) = delete;
@@ -29,4 +28,3 @@ private:
     struct Impl;
     std::unique_ptr<Impl> impl_;
 };
-
