@@ -9,7 +9,7 @@ health="$script_dir/build/health.json"
 status_file="$script_dir/build/status.json"
 index="$script_dir/build/index-smoke.html"
 
-"$executable" --no-browser --no-window --duration 10 > "$log" 2>&1 &
+"$executable" --no-window --duration 10 > "$log" 2>&1 &
 bridge_pid=$!
 trap 'kill "$bridge_pid" 2>/dev/null || true' INT TERM EXIT
 

@@ -17,19 +17,18 @@ internal sealed class BridgeStatusForm : Form
     private readonly StatusDot _penDot;
     private readonly Label _penLabel;
     private readonly Label _metrics;
-    private readonly FeedbackButton _openButton;
     private readonly FeedbackButton _quitButton;
     private readonly System.Windows.Forms.Timer _statusTimer;
     private Task<int>? _runtimeTask;
     private bool _allowClose;
     private bool _shutdownRequested;
 
-    public BridgeStatusForm(BridgeRuntime runtime, string url)
+    public BridgeStatusForm(BridgeRuntime runtime)
     {
         _runtime = runtime;
 
         Text = "Wacom Native Input Bridge";
-        ClientSize = new Size(480, 490);
+        ClientSize = new Size(480, 406);
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         StartPosition = FormStartPosition.CenterScreen;
@@ -78,7 +77,7 @@ internal sealed class BridgeStatusForm : Form
             AutoSize = false,
             Location = new Point(29, 185),
             Size = new Size(365, 79),
-            Text = "이벤트 0  ·  브라우저 0\r\n누락: 입력 0  ·  클라이언트 0",
+            Text = "이벤트 0  ·  클라이언트 0\r\n누락: 입력 0  ·  전송 0",
             ForeColor = Color.FromArgb(99, 105, 114),
             Font = new Font("Segoe UI", 9.25F, FontStyle.Regular, GraphicsUnit.Point),
             BackColor = Color.Transparent
@@ -86,21 +85,9 @@ internal sealed class BridgeStatusForm : Form
 
         statusPanel.Controls.AddRange([_heading, _touchDot, _touchLabel, _penDot, _penLabel, _metrics]);
 
-        _openButton = new FeedbackButton
-        {
-            Location = new Point(29, 325),
-            Size = new Size(422, 55),
-            Text = "브라우저 열기",
-            NormalColor = Color.FromArgb(232, 237, 245),
-            HoverColor = Color.FromArgb(219, 227, 239),
-            PressedColor = Color.FromArgb(199, 210, 226),
-            TextColor = Color.FromArgb(41, 56, 77)
-        };
-        _openButton.Click += (_, _) => BrowserLauncher.OpenDefault(url);
-
         _quitButton = new FeedbackButton
         {
-            Location = new Point(29, 398),
+            Location = new Point(29, 325),
             Size = new Size(422, 55),
             Text = "종료",
             NormalColor = Color.FromArgb(199, 79, 84),
@@ -110,8 +97,7 @@ internal sealed class BridgeStatusForm : Form
         };
         _quitButton.Click += (_, _) => BeginShutdown();
 
-        Controls.AddRange([statusPanel, _openButton, _quitButton]);
-        AcceptButton = _openButton;
+        Controls.AddRange([statusPanel, _quitButton]);
 
         _statusTimer = new System.Windows.Forms.Timer { Interval = 250 };
         _statusTimer.Tick += (_, _) => RefreshStatus();
@@ -167,8 +153,8 @@ internal sealed class BridgeStatusForm : Form
             SetDeviceStatus(_touchDot, _touchLabel, "터치", status.Native.TouchReady);
             SetDeviceStatus(_penDot, _penLabel, "펜", status.Native.PenReady);
             _metrics.Text =
-                $"이벤트 {status.Native.ProducedEvents:N0}  ·  브라우저 {status.WebSocketClients:N0}\r\n" +
-                $"누락: 입력 {status.Native.DroppedInputEvents:N0}  ·  클라이언트 {status.DroppedClientMessages:N0}";
+                $"이벤트 {status.Native.ProducedEvents:N0}  ·  클라이언트 {status.WebSocketClients:N0}\r\n" +
+                $"누락: 입력 {status.Native.DroppedInputEvents:N0}  ·  전송 {status.DroppedClientMessages:N0}";
         }
 
         if (_runtime.StartupError is not null)
@@ -179,7 +165,6 @@ internal sealed class BridgeStatusForm : Form
             _touchLabel.Text = "터치 확인 불가";
             _penLabel.Text = "펜 확인 불가";
             _metrics.Text = _runtime.StartupError;
-            _openButton.Enabled = false;
         }
 
         if (_runtimeTask?.IsCompleted != true)
@@ -216,7 +201,6 @@ internal sealed class BridgeStatusForm : Form
         _heading.Text = "앱 종료 중…";
         _touchDot.DotColor = Gray;
         _penDot.DotColor = Gray;
-        _openButton.Enabled = false;
         _quitButton.Enabled = false;
         _runtime.RequestStop();
 

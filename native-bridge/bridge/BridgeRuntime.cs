@@ -21,7 +21,6 @@ internal sealed class BridgeRuntime : IAsyncDisposable
         _options = options;
     }
 
-    public event Action? Started;
     public event Action? Stopped;
 
     public bool IsRunning { get; private set; }
@@ -73,7 +72,6 @@ internal sealed class BridgeRuntime : IAsyncDisposable
             Console.WriteLine($"Touch ready: {_input.TouchReady}, Pen ready: {_input.PenReady}");
             Console.WriteLine($"WebSocket: {_options.Url.Replace("http://", "ws://")}/ws");
 
-            Started?.Invoke();
             await _app.WaitForShutdownAsync(lifetime.Token);
             exitCode = _input.TouchReady && _input.PenReady ? 0 : 2;
         }

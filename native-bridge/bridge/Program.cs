@@ -28,8 +28,7 @@ internal static class Program
         ApplicationConfiguration.Initialize();
 
         var runtime = new BridgeRuntime(options);
-        ConfigureBrowserLaunch(runtime, options);
-        using var window = new BridgeStatusForm(runtime, options.Url);
+        using var window = new BridgeStatusForm(runtime);
         var runtimeTask = runtime.RunAsync();
         window.AttachRuntimeTask(runtimeTask);
 
@@ -50,18 +49,6 @@ internal static class Program
         };
 
         await using var runtime = new BridgeRuntime(options);
-        ConfigureBrowserLaunch(runtime, options);
         return await runtime.RunAsync(shutdown.Token);
-    }
-
-    private static void ConfigureBrowserLaunch(BridgeRuntime runtime, BridgeOptions options)
-    {
-        runtime.Started += () =>
-        {
-            if (options.OpenBrowser)
-            {
-                BrowserLauncher.OpenDefault(options.Url);
-            }
-        };
     }
 }

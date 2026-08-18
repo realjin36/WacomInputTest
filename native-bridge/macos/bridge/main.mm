@@ -19,7 +19,6 @@ namespace {
 struct Options {
     std::uint16_t port = 8765;
     std::optional<double> durationSeconds;
-    bool launchBrowser = true;
     bool showWindow = true;
 };
 
@@ -45,22 +44,11 @@ Options ParseOptions(int argc, char* argv[]) {
             if (end != argv[index] && *end == '\0' && parsed > 0 && parsed <= 65535) {
                 options.port = static_cast<std::uint16_t>(parsed);
             }
-        } else if (argument == "--no-browser") {
-            options.launchBrowser = false;
         } else if (argument == "--no-window") {
             options.showWindow = false;
         }
     }
     return options;
-}
-
-void OpenWebApp(std::uint16_t port) {
-    NSString* urlString = [NSString stringWithFormat:@"http://127.0.0.1:%u", port];
-    NSURL* url = [NSURL URLWithString:urlString];
-    const BOOL opened = [NSWorkspace.sharedWorkspace openURL:url];
-    std::cout << (opened ? "Opened default browser: "
-                         : "Browser launch failed; open this URL manually: ")
-              << urlString.UTF8String << '\n';
 }
 
 }  // namespace
@@ -133,22 +121,19 @@ void OpenWebApp(std::uint16_t port) {
 @property(nonatomic, strong) NSTextField* penDot;
 @property(nonatomic, strong) NSTextField* penLabel;
 @property(nonatomic, strong) NSTextField* metricsLabel;
-@property(nonatomic, strong) FeedbackButton* openButton;
 @property(nonatomic, strong) FeedbackButton* quitButton;
-@property(nonatomic) std::uint16_t port;
-- (instancetype)initWithPort:(std::uint16_t)port;
+- (instancetype)init;
 - (void)updateNativeStatus:(const NativeStatusSnapshot&)nativeStatus
               serverStatus:(const ServerStatusSnapshot&)serverStatus;
 @end
 
 @implementation BridgeWindowController
 
-- (instancetype)initWithPort:(std::uint16_t)port {
+- (instancetype)init {
     self = [super init];
     if (self == nil) return nil;
-    self.port = port;
 
-    const NSRect frame = NSMakeRect(0, 0, 360, 320);
+    const NSRect frame = NSMakeRect(0, 0, 360, 252);
     self.window = [[NSWindow alloc]
         initWithContentRect:frame
                   styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable
@@ -159,7 +144,7 @@ void OpenWebApp(std::uint16_t port) {
     self.window.releasedWhenClosed = NO;
     self.window.delegate = self;
 
-    NSBox* statusPanel = [[NSBox alloc] initWithFrame:NSMakeRect(24, 156, 312, 140)];
+    NSBox* statusPanel = [[NSBox alloc] initWithFrame:NSMakeRect(24, 88, 312, 140)];
     statusPanel.boxType = NSBoxCustom;
     statusPanel.titlePosition = NSNoTitle;
     statusPanel.borderColor = [NSColor colorWithWhite:0.88 alpha:1];
@@ -195,29 +180,14 @@ void OpenWebApp(std::uint16_t port) {
     self.penLabel.font = [NSFont systemFontOfSize:13];
     [statusPanel.contentView addSubview:self.penLabel];
 
-    self.metricsLabel = [NSTextField labelWithString:@"이벤트 0  ·  브라우저 0\n누락: 입력 0  ·  클라이언트 0"];
+    self.metricsLabel = [NSTextField labelWithString:@"이벤트 0  ·  클라이언트 0\n누락: 입력 0  ·  전송 0"];
     self.metricsLabel.frame = NSMakeRect(20, 16, 272, 38);
     self.metricsLabel.font = [NSFont monospacedDigitSystemFontOfSize:12 weight:NSFontWeightRegular];
     self.metricsLabel.textColor = NSColor.secondaryLabelColor;
     self.metricsLabel.maximumNumberOfLines = 2;
     [statusPanel.contentView addSubview:self.metricsLabel];
 
-    self.openButton = [[FeedbackButton alloc] initWithFrame:NSMakeRect(24, 92, 312, 48)];
-    self.openButton.title = @"브라우저 열기";
-    self.openButton.bordered = NO;
-    self.openButton.wantsLayer = YES;
-    self.openButton.layer.cornerRadius = 10;
-    self.openButton.normalBackgroundColor = [NSColor colorWithSRGBRed:0.91 green:0.93 blue:0.96 alpha:1];
-    self.openButton.hoverBackgroundColor = [NSColor colorWithSRGBRed:0.86 green:0.89 blue:0.94 alpha:1];
-    self.openButton.pressedBackgroundColor = [NSColor colorWithSRGBRed:0.78 green:0.83 blue:0.90 alpha:1];
-    [self.openButton applyNormalBackground];
-    self.openButton.contentTintColor = [NSColor colorWithSRGBRed:0.16 green:0.22 blue:0.31 alpha:1];
-    self.openButton.font = [NSFont systemFontOfSize:14 weight:NSFontWeightMedium];
-    self.openButton.target = self;
-    self.openButton.action = @selector(openWebApp:);
-    [self.window.contentView addSubview:self.openButton];
-
-    self.quitButton = [[FeedbackButton alloc] initWithFrame:NSMakeRect(24, 28, 312, 48)];
+    self.quitButton = [[FeedbackButton alloc] initWithFrame:NSMakeRect(24, 24, 312, 48)];
     self.quitButton.title = @"종료";
     self.quitButton.bordered = NO;
     self.quitButton.wantsLayer = YES;
@@ -247,16 +217,11 @@ void OpenWebApp(std::uint16_t port) {
     self.penDot.textColor = nativeStatus.penReady ? NSColor.systemGreenColor : NSColor.systemRedColor;
     self.penLabel.stringValue = nativeStatus.penReady ? @"펜 연결됨" : @"펜 연결 오류";
     self.metricsLabel.stringValue = [NSString stringWithFormat:
-        @"이벤트 %llu  ·  브라우저 %llu\n누락: 입력 %llu  ·  클라이언트 %llu",
+        @"이벤트 %llu  ·  클라이언트 %llu\n누락: 입력 %llu  ·  전송 %llu",
         static_cast<unsigned long long>(nativeStatus.producedEvents),
         static_cast<unsigned long long>(serverStatus.webSocketClients),
         static_cast<unsigned long long>(nativeStatus.droppedInputEvents),
         static_cast<unsigned long long>(serverStatus.droppedClientMessages)];
-}
-
-- (void)openWebApp:(id)sender {
-    (void)sender;
-    OpenWebApp(self.port);
 }
 
 - (void)requestQuit:(id)sender {
@@ -264,7 +229,6 @@ void OpenWebApp(std::uint16_t port) {
     self.statusLabel.stringValue = @"종료 중…";
     self.touchDot.textColor = NSColor.systemGrayColor;
     self.penDot.textColor = NSColor.systemGrayColor;
-    self.openButton.enabled = NO;
     self.quitButton.enabled = NO;
     gStopRequested.store(true, std::memory_order_relaxed);
 }
@@ -308,14 +272,10 @@ int main(int argc, char* argv[]) {
         BridgeWindowController* windowController = nil;
         if (options.showWindow) {
             [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-            windowController = [[BridgeWindowController alloc] initWithPort:options.port];
+            windowController = [[BridgeWindowController alloc] init];
             NSApp.delegate = windowController;
             [windowController updateNativeStatus:initialStatus serverStatus:server.Status()];
             [NSApp activateIgnoringOtherApps:YES];
-        }
-
-        if (options.launchBrowser) {
-            OpenWebApp(options.port);
         }
 
         const auto startedAt = std::chrono::steady_clock::now();

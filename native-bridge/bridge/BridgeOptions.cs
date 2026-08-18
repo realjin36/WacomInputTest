@@ -3,7 +3,6 @@ namespace WacomNativeBridge;
 internal sealed record BridgeOptions(
     string Url,
     TimeSpan? Duration,
-    bool OpenBrowser,
     bool ShowWindow)
 {
     private const string DefaultUrl = "http://127.0.0.1:8765";
@@ -12,7 +11,6 @@ internal sealed record BridgeOptions(
     {
         var url = DefaultUrl;
         TimeSpan? duration = null;
-        var openBrowser = true;
         var showWindow = true;
 
         for (var index = 0; index < args.Length; index++)
@@ -25,10 +23,6 @@ internal sealed record BridgeOptions(
                      double.TryParse(args[++index], out var seconds) && seconds > 0)
             {
                 duration = TimeSpan.FromSeconds(seconds);
-            }
-            else if (args[index] == "--no-browser")
-            {
-                openBrowser = false;
             }
             else if (args[index] == "--no-window")
             {
@@ -47,6 +41,6 @@ internal sealed record BridgeOptions(
             throw new ArgumentException("--url must be an http://127.0.0.1 or http://localhost URL.");
         }
 
-        return new BridgeOptions(url.TrimEnd('/'), duration, openBrowser, showWindow);
+        return new BridgeOptions(url.TrimEnd('/'), duration, showWindow);
     }
 }

@@ -10,7 +10,7 @@ events_log="$raw_dir/bridge-ws-events.jsonl"
 summary_log="$raw_dir/bridge-ws-summary.json"
 
 mkdir -p "$raw_dir"
-"$executable" --no-browser --no-window --duration 22 > "$bridge_log" 2>&1 &
+"$executable" --no-window --duration 22 > "$bridge_log" 2>&1 &
 bridge_pid=$!
 trap 'kill "$bridge_pid" 2>/dev/null || true' INT TERM EXIT
 
