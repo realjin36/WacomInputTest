@@ -121,7 +121,6 @@ const exportSource = `\n;globalThis.__appTest = {
   handleMessage,
   updatePanels,
   inputColor,
-  mouseAction,
   touchAction,
   penAction,
   penSideButtonChanges,
@@ -172,13 +171,6 @@ assert.equal(
   "wss://bridge.example.test/ws"
 );
 assert.equal(test.resolveBridgeEndpoints("?bridge=file%3A%2F%2Ftmp").http, "http://127.0.0.1:8765");
-assert.equal(test.mouseAction("pointerenter", false), "Mouse Enter");
-assert.equal(test.mouseAction("pointermove", false), "Mouse Hover");
-assert.equal(test.mouseAction("pointerdown", true), "Mouse Down");
-assert.equal(test.mouseAction("pointermove", true), "Mouse Move");
-assert.equal(test.mouseAction("pointerup", false), "Mouse Up");
-assert.equal(test.mouseAction("pointerleave", false), "Mouse Leave");
-assert.equal(test.mouseAction("pointercancel", false), "Mouse Cancel");
 assert.equal(test.touchAction(undefined, { down: true }, "down"), "Touch Down");
 assert.equal(test.touchAction({ down: true }, { down: true }, "hold"), "Touch Move");
 assert.equal(test.touchAction({ down: true }, { down: false }, "up"), "Touch Up");

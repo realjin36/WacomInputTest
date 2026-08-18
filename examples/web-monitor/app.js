@@ -16,7 +16,7 @@ const supportStatusElement = document.querySelector("#supportStatus");
 
 const inputs = new Map();
 const recentEvents = [];
-const colors = { mouse: "#8b9cff", touch: "#45d6a1", touchUntrusted: "#ff5d73", pen: "#ffb84d" };
+const colors = { touch: "#45d6a1", touchUntrusted: "#ff5d73", pen: "#ffb84d" };
 const MAX_TRAIL_POINTS = 64;
 const PANEL_INTERVAL = 80;
 const TOUCH_UP_HOLD_MS = 250;
@@ -179,72 +179,13 @@ function addTrail(input) {
 
 function inputLabel(type) {
   if (type === "pen") return "펜";
-  if (type === "touch") return "터치";
-  return "마우스";
+  return "터치";
 }
 
 function inputColor(input) {
   return input.type === "touch" && input.confidence === false
     ? colors.touchUntrusted
     : colors[input.type];
-}
-
-function mouseAction(eventType, down) {
-  if (eventType === "pointerenter") return "Mouse Enter";
-  if (eventType === "pointerdown") return "Mouse Down";
-  if (eventType === "pointerup") return "Mouse Up";
-  if (eventType === "pointerleave") return "Mouse Leave";
-  if (eventType === "pointercancel") return "Mouse Cancel";
-  return down ? "Mouse Move" : "Mouse Hover";
-}
-
-function handleMousePointer(event) {
-  if (event.pointerType !== "mouse") return;
-
-  const key = `mouse:${event.pointerId}`;
-  if (event.type === "pointerleave" || event.type === "pointercancel") {
-    const previous = inputs.get(key);
-    inputs.delete(key);
-    eventCount += 1;
-    recordEvent(
-      mouseAction(event.type, false),
-      `x ${fmt(previous?.x)} · y ${fmt(previous?.y)}`
-    );
-    emptyState.classList.toggle("hidden", inputs.size > 0 || eventCount > 0);
-    canvasDirty = true;
-    panelDirty = true;
-    requestRender();
-    return;
-  }
-
-  const previous = inputs.get(key);
-  const down = event.buttons !== 0;
-  const input = {
-    key, id: event.pointerId, deviceId: -1, type: "mouse",
-    x: event.clientX - areaRect.left,
-    y: event.clientY - areaRect.top,
-    rawX: event.screenX,
-    rawY: event.screenY,
-    pressure: Number.isFinite(event.pressure) ? event.pressure : down ? 0.5 : 0,
-    buttons: event.buttons,
-    down,
-    hover: !down,
-    trail: previous?.trail || [],
-    updatedAt: performance.now()
-  };
-  addTrail(input);
-  inputs.set(key, input);
-  eventCount += 1;
-  const action = mouseAction(event.type, down);
-  recordEvent(
-    action,
-    `x ${fmt(input.x)} · y ${fmt(input.y)} · ${buttonLabel(input)}`,
-    isCoalescibleAction(action)
-  );
-  emptyState.classList.add("hidden");
-  canvasDirty = true;
-  panelDirty = true;
-  requestRender();
 }
 
 function isDownState(state) {
@@ -303,8 +244,7 @@ function stablePenTipDown(
 }
 
 function isCoalescibleAction(action) {
-  return action === "Touch Move" || action === "Pen Move" || action === "Pen Hover"
-    || action === "Mouse Move" || action === "Mouse Hover";
+  return action === "Touch Move" || action === "Pen Move" || action === "Pen Hover";
 }
 
 function handleTouchFrame(message) {
@@ -543,13 +483,7 @@ function buttonLabel(input) {
     }
     return labels.join("+") || `비트 ${input.buttons}`;
   }
-  const labels = [];
-  if (input.buttons & 1) labels.push(input.type === "mouse" ? "왼쪽" : "접촉");
-  if (input.buttons & 2) labels.push(input.type === "mouse" ? "오른쪽" : "버튼2");
-  if (input.buttons & 4) labels.push(input.type === "mouse" ? "가운데" : "버튼3");
-  if (input.buttons & 8) labels.push("뒤로");
-  if (input.buttons & 16) labels.push("앞으로");
-  return labels.join("+") || `비트 ${input.buttons}`;
+  return input.buttons & 1 ? "접촉" : `비트 ${input.buttons}`;
 }
 
 function fmt(value, digits = 0) {
@@ -590,13 +524,10 @@ function updatePanels(forceLog = false) {
       ? `<div class="datum"><span>접촉 크기(raw)</span><b>${fmt(input.rawWidth, 2)} × ${fmt(input.rawHeight, 2)}</b></div>
          <div class="datum"><span>감도 / 방향</span><b>${input.sensitivity} / ${fmt(input.orientation, 1)}°</b></div>
          <div class="datum"><span>신뢰도</span><b>${input.confidence}</b></div>`
-      : input.type === "pen"
-      ? `<div class="datum"><span>압력(raw / normalized)</span><b>${input.rawPressure} / ${fmt(input.pressure, 3)}</b></div>
+      : `<div class="datum"><span>압력(raw / normalized)</span><b>${input.rawPressure} / ${fmt(input.pressure, 3)}</b></div>
          <div class="datum"><span>${input.hasCommonTilt ? "Tilt X / Y" : "고도 / 방위"}</span><b>${input.hasCommonTilt ? `${fmt(input.tiltX, 3)} / ${fmt(input.tiltY, 3)}` : `${fmt(input.altitude, 1)}° / ${fmt(input.azimuth, 1)}°`}</b></div>
          <div class="datum"><span>Rotation / Z</span><b>${fmt(input.rotation, 1)}° / ${input.z}</b></div>
-         <div class="datum"><span>장치 / Unique ID</span><b>${escapeHtml(input.deviceType)} / ${input.uniqueId || "—"}</b></div>`
-      : `<div class="datum"><span>화면 좌표</span><b>${fmt(input.rawX)} / ${fmt(input.rawY)}</b></div>
-         <div class="datum"><span>버튼</span><b>${escapeHtml(buttonLabel(input))} (${input.buttons})</b></div>`;
+         <div class="datum"><span>장치 / Unique ID</span><b>${escapeHtml(input.deviceType)} / ${input.uniqueId || "—"}</b></div>`;
     return `<article class="pointer-card" style="--pointer-color:${inputColor(input)}">
       <div class="pointer-head"><strong>${inputLabel(input.type)} #${input.id}</strong><span class="badge">${input.hover ? "HOVER" : input.down ? "DOWN" : "UP"}</span></div>
       <div class="data-grid">
@@ -637,7 +568,7 @@ function drawCanvas() {
 
     const radius = input.type === "touch"
       ? Math.max(12, Math.min(55, Math.max(input.width, input.height) / 2))
-      : input.type === "pen" ? 8 + input.pressure * 18 : 7;
+      : 8 + input.pressure * 18;
     ctx.save();
     ctx.translate(input.x, input.y);
     ctx.strokeStyle = color;
@@ -721,9 +652,6 @@ window.addEventListener("focus", reportClientActivity);
 window.addEventListener("blur", reportClientActivity);
 document.addEventListener("visibilitychange", reportClientActivity);
 inputArea.addEventListener("contextmenu", event => event.preventDefault());
-["pointerenter", "pointermove", "pointerdown", "pointerup", "pointerleave", "pointercancel"].forEach(type => {
-  inputArea.addEventListener(type, handleMousePointer, { passive: true });
-});
 new ResizeObserver(resizeCanvas).observe(inputArea);
 updatePanels(true);
 resizeCanvas();
